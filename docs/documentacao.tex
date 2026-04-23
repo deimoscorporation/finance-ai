@@ -1,0 +1,1754 @@
+% ============================================================
+%  FinancePro — Documentação Técnica Completa
+%  Compilar com: pdflatex documentacao.tex (2×) ou XeLaTeX
+% ============================================================
+\documentclass[12pt, a4paper, oneside]{report}
+
+% ── Codificação e idioma ─────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+
+% ── Tipografia ───────────────────────────────────────────────
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ── Geometria de página ──────────────────────────────────────
+\usepackage[
+  top=3cm, bottom=2.5cm,
+  left=3cm, right=2.5cm
+]{geometry}
+
+% ── Cores ────────────────────────────────────────────────────
+\usepackage[dvipsnames, table]{xcolor}
+\definecolor{primary}{HTML}{FF5710}
+\definecolor{secondary}{HTML}{1E1B6E}
+\definecolor{success}{HTML}{16A34A}
+\definecolor{danger}{HTML}{DC2626}
+\definecolor{warning}{HTML}{D97706}
+\definecolor{purple}{HTML}{7C3AED}
+\definecolor{info}{HTML}{0EA5E9}
+\definecolor{codebg}{HTML}{F8FAFC}
+\definecolor{codeborder}{HTML}{E2E8F0}
+\definecolor{gray1}{HTML}{1E293B}
+\definecolor{gray3}{HTML}{64748B}
+\definecolor{gray5}{HTML}{94A3B8}
+
+% ── Gráficos e figuras ───────────────────────────────────────
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, shadows}
+
+% ── Tabelas ──────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{makecell}
+\renewcommand{\arraystretch}{1.35}
+
+% ── Listas ───────────────────────────────────────────────────
+\usepackage{enumitem}
+\setlist[itemize]{leftmargin=*, topsep=4pt, itemsep=2pt}
+\setlist[enumerate]{leftmargin=*, topsep=4pt, itemsep=2pt}
+
+% ── Código-fonte ─────────────────────────────────────────────
+\usepackage{listings}
+\usepackage{lstautogobble}
+
+\lstdefinestyle{python}{
+  language=Python,
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{secondary}\bfseries,
+  stringstyle=\color{success},
+  commentstyle=\color{gray5}\itshape,
+  numberstyle=\tiny\color{gray5},
+  numbers=left,
+  stepnumber=1,
+  numbersep=8pt,
+  frame=single,
+  framerule=0.6pt,
+  rulecolor=\color{codeborder},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  autogobble=true,
+  xleftmargin=16pt,
+  captionpos=b,
+  aboveskip=10pt,
+  belowskip=6pt,
+}
+
+\lstdefinestyle{bash}{
+  language=bash,
+  backgroundcolor=\color{gray1},
+  basicstyle=\ttfamily\small\color{white},
+  keywordstyle=\color{info}\bfseries,
+  stringstyle=\color{success},
+  commentstyle=\color{gray5}\itshape,
+  numbers=none,
+  frame=none,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+  autogobble=true,
+  xleftmargin=10pt,
+  xrightmargin=10pt,
+  aboveskip=6pt,
+  belowskip=6pt,
+}
+
+\lstdefinestyle{django}{
+  language=Python,
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{purple}\bfseries,
+  stringstyle=\color{success},
+  commentstyle=\color{gray5}\itshape,
+  numbers=left,
+  stepnumber=1,
+  numbersep=8pt,
+  frame=single,
+  framerule=0.6pt,
+  rulecolor=\color{codeborder},
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  autogobble=true,
+  xleftmargin=16pt,
+  captionpos=b,
+}
+
+% ── Hiperlinks ───────────────────────────────────────────────
+\usepackage[
+  colorlinks=true,
+  linkcolor=secondary,
+  urlcolor=primary,
+  citecolor=gray3,
+  bookmarks=true,
+  pdftitle={FinancePro — Documentação Técnica},
+  pdfauthor={FinancePro Team},
+  pdfsubject={Sistema de Gestão Financeira Pessoal com IA},
+]{hyperref}
+
+% ── Cabeçalho e rodapé ───────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{gray3}\textit{FinancePro — Documentação Técnica}}
+\fancyhead[R]{\small\color{gray3}\textit{\leftmark}}
+\fancyfoot[C]{\small\color{gray5}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\renewcommand{\headrule}{\color{codeborder}\hrule width\headwidth height\headrulewidth}
+
+% ── Títulos de capítulos e seções ────────────────────────────
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{secondary}}
+  {\color{primary}\chaptertitlename\ \thechapter}
+  {12pt}
+  {\Huge}
+\titlespacing*{\chapter}{0pt}{-20pt}{24pt}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{secondary}}
+  {\color{primary}\thesection}{10pt}{}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{gray1}}
+  {\color{primary}\thesubsection}{8pt}{}
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{gray3}}
+  {\thesubsubsection}{6pt}{}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Sumário ──────────────────────────────────────────────────
+\usepackage{tocloft}
+\renewcommand{\cftchapfont}{\bfseries\color{secondary}}
+\renewcommand{\cftsecfont}{\color{gray1}}
+\renewcommand{\cftsubsecfont}{\color{gray3}\small}
+\renewcommand{\cftchapdotsep}{\cftdotsep}
+
+% ── Caixas de destaque ───────────────────────────────────────
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable, listingsutf8}
+
+\newtcolorbox{infobox}[1][]{
+  colback=info!6!white,
+  colframe=info!60!white,
+  fonttitle=\bfseries\small,
+  title={\textcolor{info}{\faInfo}\quad Informação},
+  #1
+}
+
+\newtcolorbox{warningbox}[1][]{
+  colback=warning!8!white,
+  colframe=warning!50!white,
+  fonttitle=\bfseries\small,
+  title={\textbf{Atenção}},
+  #1
+}
+
+\newtcolorbox{dangerbox}[1][]{
+  colback=danger!5!white,
+  colframe=danger!50!white,
+  fonttitle=\bfseries\small,
+  title={\textbf{Aviso de Segurança}},
+  #1
+}
+
+\newtcolorbox{tipbox}[1][]{
+  colback=success!6!white,
+  colframe=success!50!white,
+  fonttitle=\bfseries\small,
+  title={\textbf{Dica}},
+  #1
+}
+
+\newtcolorbox{codebox}[2][]{
+  colback=codebg,
+  colframe=codeborder,
+  fonttitle=\bfseries\small\color{gray3},
+  title={#2},
+  #1
+}
+
+% ── Espaçamento de parágrafos ────────────────────────────────
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+% ── Linha horizontal decorativa ──────────────────────────────
+\newcommand{\hruledeco}{%
+  \vspace{4pt}%
+  {\color{codeborder}\hrule height 1pt}%
+  \vspace{4pt}%
+}
+
+% ── Badge colorido ───────────────────────────────────────────
+\newcommand{\badge}[2]{%
+  \colorbox{#1!15!white}{\textcolor{#1}{\textbf{\small #2}}}%
+}
+
+% ── Rótulo de método HTTP ────────────────────────────────────
+\newcommand{\httpget}{\badge{success}{GET}}
+\newcommand{\httppost}{\badge{primary}{POST}}
+\newcommand{\httpput}{\badge{warning}{PUT}}
+\newcommand{\httpdel}{\badge{danger}{DELETE}}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+% ── Capa ────────────────────────────────────────────────────
+\begin{titlepage}
+  \begin{tikzpicture}[remember picture, overlay]
+    % Bloco superior colorido
+    \fill[secondary] (current page.north west) rectangle
+      ([yshift=-8cm]current page.north east);
+    % Faixa laranja
+    \fill[primary] ([yshift=-8cm]current page.north west) rectangle
+      ([yshift=-8.6cm]current page.north east);
+    % Bloco inferior
+    \fill[codebg] (current page.south west) rectangle
+      ([yshift=3.5cm]current page.south east);
+    \fill[codeborder] ([yshift=3.5cm]current page.south west) rectangle
+      ([yshift=3.4cm]current page.south east);
+  \end{tikzpicture}
+
+  \vspace*{1.6cm}
+
+  % Logotipo / nome do sistema
+  \begin{center}
+    {\fontsize{46}{52}\selectfont\bfseries\color{white}Finance\textcolor{primary}{Pro}}\\[6pt]
+    {\large\color{white!70!secondary}\itshape Sistema de Gestão Financeira Pessoal com Inteligência Artificial}
+  \end{center}
+
+  \vspace{1cm}
+
+  % Linha divisória
+  {\color{white!30!secondary}\hrule height 0.8pt}
+
+  \vspace{2.5cm}
+
+  % Informações centrais
+  \begin{center}
+    {\LARGE\bfseries\color{gray1} Documentação Técnica Completa}\\[14pt]
+    {\large\color{gray3} Versão 1.0 — MVP}\\[28pt]
+
+    \begin{tabular}{ll}
+      \textbf{\color{secondary}Stack principal:} & Django 4.2 · Python 3.x · SQLite\\[4pt]
+      \textbf{\color{secondary}IA / NLP:}        & LangChain 0.3 · OpenAI GPT-4o-mini\\[4pt]
+      \textbf{\color{secondary}Frontend:}        & HTML5 · CSS3 · JavaScript · Chart.js\\[4pt]
+      \textbf{\color{secondary}Idioma:}          & Português (Brasil) · pt-BR\\[4pt]
+      \textbf{\color{secondary}Licença:}         & Proprietária\\
+    \end{tabular}
+  \end{center}
+
+  \vfill
+
+  \begin{center}
+    {\small\color{gray5}\textit{Documentação gerada em \today}}
+  \end{center}
+\end{titlepage}
+
+% ── Página em branco ─────────────────────────────────────────
+\clearpage\thispagestyle{empty}\mbox{}\clearpage
+
+% ── Resumo executivo ─────────────────────────────────────────
+\chapter*{Resumo Executivo}
+\addcontentsline{toc}{chapter}{Resumo Executivo}
+\markboth{Resumo Executivo}{}
+
+O \textbf{FinancePro} é um sistema web de gestão financeira pessoal desenvolvido em \textbf{Django 4.2}, voltado exclusivamente ao mercado brasileiro. A plataforma permite ao usuário cadastrar receitas, gastos fixos e variáveis, reservas de emergência e investimentos, consolidando todos os dados em um painel interativo com gráficos em tempo real.
+
+O diferencial central do sistema é a integração com \textbf{cinco módulos de Inteligência Artificial} construídos sobre a arquitetura LangChain + OpenAI GPT-4o-mini, que transformam dados financeiros brutos em diagnósticos precisos, recomendações acionáveis e simulações de cenários hipotéticos com valores em Reais.
+
+\medskip
+\textbf{Principais funcionalidades:}
+\begin{itemize}
+  \item Gestão completa de finanças pessoais (CRUD) com autenticação via e-mail
+  \item Dashboard interativo com KPIs calculados automaticamente e checklist de pagamentos
+  \item \textbf{AI Financial Coach} — pontuação de saúde financeira e recomendações personalizadas
+  \item \textbf{AI Spending Analysis} — detecção de desperdícios, padrões ruins e riscos financeiros
+  \item \textbf{AI Budget Optimizer} — otimização orçamentária baseada na Regra 50/30/20
+  \item \textbf{AI Investment Assistant} (Premium) — análise de portfólio, perfil de risco e projeções de patrimônio
+  \item \textbf{AI What-if Simulator} — chatbot conversacional para simulação de cenários hipotéticos
+\end{itemize}
+
+% ── Sumário ──────────────────────────────────────────────────
+\tableofcontents
+\clearpage
+
+% ============================================================
+\chapter{Visão Geral do Projeto}
+% ============================================================
+
+\section{Contexto e Motivação}
+
+O planejamento financeiro pessoal é um desafio recorrente para a maioria dos brasileiros. A ausência de ferramentas acessíveis, integradas e inteligentes que falem a língua do cidadão comum — em Reais, com contexto cultural brasileiro — motivou o desenvolvimento do FinancePro.
+
+O sistema foi concebido como um \textbf{MVP (Minimum Viable Product)} funcional e extensível, com uma base técnica sólida que permite evolução para produto SaaS completo sem refatoração estrutural significativa.
+
+\section{Objetivos do Sistema}
+
+\begin{enumerate}
+  \item Oferecer controle financeiro completo em uma única plataforma
+  \item Aplicar Inteligência Artificial para transformar dados em insights acionáveis
+  \item Calcular impactos financeiros concretos (R\$, \%, prazos em meses/anos)
+  \item Ser 100\% localizado para o contexto brasileiro (moeda, benchmarks, linguagem)
+  \item Manter arquitetura limpa e expansível para futuras funcionalidades
+\end{enumerate}
+
+\section{Stack Tecnológica}
+
+\begin{table}[H]
+\centering
+\caption{Tecnologias utilizadas no FinancePro}
+\begin{tabularx}{\textwidth}{>{\bfseries}l l X}
+\toprule
+Camada & Tecnologia & Descrição \\
+\midrule
+Backend & Django 4.2.29 & Framework web Python com ORM, autenticação e admin \\
+Linguagem & Python 3.x & Linguagem de programação principal \\
+Banco de dados & SQLite3 & Banco relacional embutido (dev); compatível com PostgreSQL \\
+IA / NLP & LangChain $\geq$ 0.3 & Orquestração de agentes e cadeias de processamento \\
+LLM & OpenAI GPT-4o-mini & Modelo de linguagem para análises financeiras \\
+Validação & Pydantic v2 & Modelos de saída estruturada dos agentes IA \\
+Variáveis de ambiente & python-dotenv 1.0 & Carregamento seguro de configurações \\
+Frontend & HTML5 + CSS3 + JS & Interface responsiva sem frameworks JS pesados \\
+Gráficos & Chart.js 4.4 & Gráficos interativos (donut, barra) \\
+Ícones & Font Awesome 6.5 & Ícones vetoriais em toda a interface \\
+Tipografia & Google Fonts (Inter) & Fonte principal da interface \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Estrutura de Diretórios}
+
+\begin{lstlisting}[style=bash, caption={Estrutura completa do projeto}]
+MVP - Finance Django/
+├── .env                        # Variáveis de ambiente (API keys, SECRET_KEY)
+├── .venv/                      # Ambiente virtual Python
+├── db.sqlite3                  # Banco de dados SQLite (desenvolvimento)
+├── manage.py                   # CLI do Django
+├── requirements.txt            # Dependências mínimas de produção
+├── requirements_django.txt     # Dependências completas (com IA)
+├── setup.sh                    # Script de configuração inicial
+│
+├── finance_project/            # Configurações do projeto Django
+│   ├── settings.py             # Configurações globais
+│   ├── urls.py                 # Roteamento raiz
+│   └── wsgi.py                 # Interface WSGI para produção
+│
+├── accounts/                   # App de autenticação
+│   ├── migrations/
+│   ├── admin.py
+│   ├── forms.py                # Formulários de login, registro, perfil
+│   ├── models.py               # Modelo de usuário customizado
+│   ├── urls.py
+│   └── views.py
+│
+├── finance/                    # App principal de finanças
+│   ├── migrations/
+│   ├── admin.py
+│   ├── forms.py                # Formulários financeiros
+│   ├── models.py               # Modelos: Receita, Gastos, Reservas, Investimentos
+│   ├── urls.py
+│   ├── views.py                # Views CRUD + endpoints de IA
+│   ├── ai_coach.py             # Agente IA: Coach Financeiro
+│   ├── budget_optimizer.py     # Agente IA: Otimizador de Orçamento
+│   ├── investment_assistant.py # Agente IA: Assistente de Investimentos
+│   ├── spending_analyzer.py    # Agente IA: Analisador de Gastos
+│   └── whatif_simulator.py     # Agente IA: Simulador What-if (chatbot)
+│
+└── templates/
+    ├── base.html               # Template base (sidebar, header)
+    ├── accounts/               # Templates de autenticação
+    └── finance/                # Templates de finanças e IA
+\end{lstlisting}
+
+% ============================================================
+\chapter{Arquitetura do Sistema}
+% ============================================================
+
+\section{Diagrama de Arquitetura Geral}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=1.2cm and 1.5cm,
+  box/.style={rectangle, rounded corners=6pt, minimum width=3cm, minimum height=0.9cm,
+    draw, thick, align=center, font=\small\bfseries},
+  arrow/.style={-Stealth, thick, color=gray3},
+  cloud/.style={rectangle, rounded corners=12pt, minimum width=4cm, minimum height=1.2cm,
+    draw=primary, fill=primary!8, thick, align=center, font=\small\bfseries}
+]
+
+% Camadas
+\node[box, fill=codebg, draw=codeborder] (browser) {Navegador\\(HTML/JS/CSS)};
+\node[box, fill=secondary!10, draw=secondary, below=of browser] (django) {Django 4.2\\(Views / URLs)};
+\node[box, fill=success!10, draw=success, below left=of django] (crud) {CRUD\\Financeiro};
+\node[box, fill=purple!10, draw=purple, below right=of django] (ai) {Agentes IA\\(5 módulos)};
+\node[box, fill=warning!10, draw=warning, below=of crud] (db) {SQLite3\\(ORM Django)};
+\node[cloud, below=of ai] (openai) {OpenAI\\GPT-4o-mini};
+\node[box, fill=info!10, draw=info, below=of django, xshift=0cm, yshift=-3.8cm] (lc) {LangChain\\Pydantic v2};
+
+\draw[arrow] (browser) -- (django);
+\draw[arrow] (django) -- (crud);
+\draw[arrow] (django) -- (ai);
+\draw[arrow] (crud) -- (db);
+\draw[arrow] (ai) -- (lc);
+\draw[arrow] (lc) -- (openai);
+\draw[arrow] (db) -- (django);
+\draw[arrow, dashed] (django) -- (browser);
+
+\end{tikzpicture}
+\caption{Diagrama de arquitetura do FinancePro}
+\end{figure}
+
+\section{Padrão Arquitetural}
+
+O sistema adota o padrão \textbf{MTV (Model-Template-View)} do Django, com extensão para agentes de IA:
+
+\begin{description}
+  \item[\textcolor{secondary}{Model}] Modelos de dados mapeados via ORM do Django para o banco SQLite. Cada entidade financeira possui seu próprio modelo com validações, relacionamentos e propriedades calculadas.
+  \item[\textcolor{secondary}{Template}] Templates HTML com herança hierárquica partindo de \texttt{base.html}. Toda a interface usa CSS variables, Font Awesome 6.5 e Chart.js, sem dependência de frameworks JavaScript externos.
+  \item[\textcolor{secondary}{View}] Views Python com decoradores \texttt{@login\_required}. Endpoints CRUD retornam templates renderizados; endpoints de IA retornam \texttt{JsonResponse} para consumo assíncrono via \texttt{fetch()}.
+  \item[\textcolor{secondary}{AI Layer}] Cinco módulos independentes, cada um seguindo um padrão uniforme: modelos Pydantic $\rightarrow$ \texttt{PromptTemplate} $\rightarrow$ \texttt{ChatOpenAI} $\rightarrow$ \texttt{JsonOutputParser}.
+\end{description}
+
+\section{Padrão dos Agentes de IA}
+
+Todos os cinco módulos de IA seguem exatamente a mesma arquitetura de classe, garantindo consistência e facilidade de manutenção:
+
+\begin{lstlisting}[style=python, caption={Padrão base de todos os agentes IA}]
+from pydantic import BaseModel, Field
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
+
+class OutputModel(BaseModel):
+    campo: str = Field(description="Descrição do campo")
+
+class AgentClass:
+    def __init__(self, model=None):
+        load_dotenv()
+        self.model = model or ChatOpenAI(model="gpt-4o-mini", temperature=X)
+        self.parser = JsonOutputParser(pydantic_object=OutputModel)
+        self.prompt = self._build_prompt()
+        self.chain  = self._build_chain()
+
+    def _build_prompt(self) -> PromptTemplate:
+        return PromptTemplate(
+            template=TEMPLATE,
+            input_variables=["financial_data", ...],
+            partial_variables={
+                "format_instructions": self.parser.get_format_instructions()
+            },
+        )
+
+    def _build_chain(self):
+        return self.prompt | self.model | self.parser
+
+    def analyse(self, user) -> dict:
+        context = _build_context(user)
+        return self.chain.invoke({"financial_data": context})
+\end{lstlisting}
+
+\section{Fluxo de Dados}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=0.8cm,
+  step/.style={rectangle, rounded corners=4pt, minimum width=4.5cm, minimum height=0.75cm,
+    draw=secondary!40, fill=secondary!5, thick, align=center, font=\small},
+  ai/.style={rectangle, rounded corners=4pt, minimum width=4.5cm, minimum height=0.75cm,
+    draw=primary!60, fill=primary!8, thick, align=center, font=\small\bfseries},
+  arrow/.style={-Stealth, thick, color=secondary!60}
+]
+
+\node[step] (login)   {1. Usuário faz login (e-mail)};
+\node[step, below=of login]   (crud)    {2. Cadastra receitas, gastos,\\reservas e investimentos};
+\node[step, below=of crud]    (dash)    {3. Dashboard calcula KPIs\\em tempo real};
+\node[ai,   below=of dash]    (ai1)     {4. Aciona módulo de IA desejado};
+\node[step, below=of ai1]     (ctx)     {5. Contexto financeiro é construído\\com dados reais do usuário};
+\node[ai,   below=of ctx]     (llm)     {6. LangChain envia prompt ao\\GPT-4o-mini (OpenAI API)};
+\node[step, below=of llm]     (parse)   {7. Resposta é parseada via\\Pydantic (JSON estruturado)};
+\node[ai,   below=of parse]   (ui)      {8. Frontend renderiza resultado\\com impactos em R\$};
+
+\foreach \a/\b in {login/crud, crud/dash, dash/ai1, ai1/ctx, ctx/llm, llm/parse, parse/ui}
+  \draw[arrow] (\a) -- (\b);
+
+\end{tikzpicture}
+\caption{Fluxo completo de dados no FinancePro}
+\end{figure}
+
+% ============================================================
+\chapter{Configuração e Instalação}
+% ============================================================
+
+\section{Pré-requisitos}
+
+\begin{itemize}
+  \item Python 3.10 ou superior
+  \item pip3 / virtualenv
+  \item Chave de API da OpenAI (\texttt{OPENAI\_API\_KEY})
+  \item Acesso à internet (para chamadas à API OpenAI)
+\end{itemize}
+
+\section{Instalação Rápida}
+
+\begin{lstlisting}[style=bash, caption={Instalação via script automatizado}]
+# Clone ou extraia o projeto
+cd "MVP - Finance Django"
+
+# Execute o script de configuração
+bash setup.sh
+\end{lstlisting}
+
+O script \texttt{setup.sh} executa automaticamente:
+\begin{enumerate}
+  \item Instalação de todas as dependências via \texttt{pip3 install -r requirements\_django.txt}
+  \item Aplicação de todas as migrações do banco de dados
+  \item Criação do diretório \texttt{static/}
+  \item Criação interativa do superusuário (administrador)
+\end{enumerate}
+
+\section{Instalação Manual}
+
+\begin{lstlisting}[style=bash, caption={Instalação passo a passo}]
+# 1. Criar e ativar ambiente virtual
+python3 -m venv .venv
+source .venv/bin/activate        # Linux/macOS
+.venv\Scripts\activate           # Windows
+
+# 2. Instalar dependências
+pip3 install -r requirements_django.txt
+
+# 3. Configurar variáveis de ambiente
+cp .env.example .env             # Editar com seus valores
+
+# 4. Aplicar migrações
+python manage.py migrate
+
+# 5. Criar superusuário
+python manage.py createsuperuser
+
+# 6. Iniciar servidor de desenvolvimento
+python manage.py runserver
+\end{lstlisting}
+
+\section{Variáveis de Ambiente}
+
+O arquivo \texttt{.env} na raiz do projeto controla todas as configurações sensíveis:
+
+\begin{table}[H]
+\centering
+\caption{Variáveis de ambiente do sistema}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l X}
+\toprule
+Variável & Obrigatória & Descrição \\
+\midrule
+SECRET\_KEY & Sim & Chave secreta do Django para criptografia de sessão \\
+DEBUG & Não & \texttt{True} (dev) ou \texttt{False} (produção) \\
+ALLOWED\_HOSTS & Não & Hosts permitidos, separados por vírgula \\
+OPENAI\_API\_KEY & Sim & Chave da API OpenAI para os módulos de IA \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{dangerbox}
+\textbf{Nunca} comite o arquivo \texttt{.env} em repositórios públicos. Adicione-o ao \texttt{.gitignore}. A chave \texttt{OPENAI\_API\_KEY} representa créditos financeiros reais e, se exposta, pode ser explorada por terceiros.
+\end{dangerbox}
+
+\section{Dependências do Projeto}
+
+\begin{table}[H]
+\centering
+\caption{Dependências principais}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l X}
+\toprule
+Pacote & Versão & Finalidade \\
+\midrule
+Django & $\geq$ 4.2, $<$ 5.0 & Framework web principal \\
+Pillow & $\geq$ 10.0 & Processamento de imagens (foto de perfil) \\
+python-dotenv & $\geq$ 1.0 & Carregamento do arquivo \texttt{.env} \\
+langchain & $\geq$ 0.3 & Orquestração de agentes LLM \\
+langchain-openai & $\geq$ 0.2 & Integração LangChain com OpenAI \\
+openai & $\geq$ 1.0 & SDK oficial da OpenAI \\
+pydantic & v2 (via langchain) & Validação e serialização de modelos \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\chapter{Módulo de Autenticação}
+% ============================================================
+
+\section{Modelo de Usuário Customizado}
+
+O sistema utiliza um \textbf{modelo de usuário completamente customizado}, substituindo o padrão do Django (que usa \textit{username} como campo primário) por autenticação baseada em \textbf{e-mail}.
+
+\begin{lstlisting}[style=django, caption={accounts/models.py — Modelo User customizado}]
+class User(AbstractBaseUser, PermissionsMixin):
+    email       = models.EmailField(unique=True)   # Campo de login
+    first_name  = models.CharField(max_length=100)
+    last_name   = models.CharField(max_length=100, blank=True)
+    photo       = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    is_active   = models.BooleanField(default=True)
+    is_staff    = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(auto_now_add=True)
+
+    USERNAME_FIELD  = 'email'       # Login por e-mail
+    REQUIRED_FIELDS = ['first_name']
+
+    objects = UserManager()
+\end{lstlisting}
+
+\begin{lstlisting}[style=django, caption={settings.py — Apontando para o modelo customizado}]
+AUTH_USER_MODEL = 'accounts.User'
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+\end{lstlisting}
+
+\section{Formulários de Autenticação}
+
+\begin{table}[H]
+\centering
+\caption{Formulários do módulo accounts}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+Formulário & Campos e Validações \\
+\midrule
+\texttt{LoginForm} & \texttt{email} (EmailField) + \texttt{password} (PasswordInput) \\
+\texttt{RegisterForm} & email, first\_name, last\_name, password, password2 (confirmação) \\
+\texttt{ProfileForm} & first\_name, last\_name, email, photo \\
+\texttt{ChangePasswordForm} & old\_password, new\_password (mín. 8 chars), confirm\_password \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{URLs de Autenticação}
+
+\begin{table}[H]
+\centering
+\caption{Rotas do app accounts}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l l}
+\toprule
+URL & Método & Função \\
+\midrule
+/accounts/login/ & GET + POST & Exibe e processa o formulário de login \\
+/accounts/register/ & GET + POST & Cadastro de novos usuários \\
+/accounts/logout/ & POST & Encerra a sessão do usuário \\
+/accounts/profile/ & GET + POST & Edição de perfil e troca de senha \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\chapter{Módulo Financeiro — Modelos de Dados}
+% ============================================================
+
+\section{Diagrama Entidade-Relacionamento}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  entity/.style={rectangle, rounded corners=6pt, minimum width=3.2cm, minimum height=1cm,
+    draw=secondary, fill=secondary!8, thick, align=center, font=\small\bfseries\color{secondary}},
+  attr/.style={font=\footnotesize\ttfamily, align=left},
+  rel/.style={-Stealth, thick, color=gray3},
+  label/.style={font=\footnotesize\itshape\color{gray3}, midway, above}
+]
+
+% User no centro
+\node[entity, fill=primary!10, draw=primary] (user) at (0,0) {User\\(accounts)};
+
+% Entidades financeiras ao redor
+\node[entity] (rec) at (-5, 2.5)  {Receita};
+\node[entity] (gf)  at (-5,-2.5)  {GastoFixo};
+\node[entity] (gv)  at ( 5, 2.5)  {GastoVariavel};
+\node[entity] (res) at ( 5,-1)    {Reserva};
+\node[entity] (inv) at ( 5,-3.5)  {Investimento};
+
+% Relações
+\draw[rel] (user) -- node[label]{n} (rec);
+\draw[rel] (user) -- node[label, below]{n} (gf);
+\draw[rel] (user) -- node[label]{n} (gv);
+\draw[rel] (user) -- node[label]{n} (res);
+\draw[rel] (user) -- node[label, below]{n} (inv);
+
+% Atributos Receita
+\node[attr, left=0.2cm of rec] {
+  \textcolor{success}{PK} id\\
+  nome : CharField\\
+  tipo : salary|vr|bonus|other\\
+  valor : DecimalField\\
+  FK user
+};
+
+% Atributos GastoFixo
+\node[attr, left=0.2cm of gf] {
+  \textcolor{success}{PK} id\\
+  nome : CharField\\
+  categoria : (7 tipos)\\
+  valor : DecimalField\\
+  pago : BooleanField\\
+  FK user
+};
+
+% Atributos GastoVariavel
+\node[attr, right=0.2cm of gv] {
+  \textcolor{success}{PK} id\\
+  nome : CharField\\
+  categoria : (7 tipos)\\
+  valor : DecimalField\\
+  data : DateField\\
+  FK user
+};
+
+% Atributos Reserva
+\node[attr, right=0.2cm of res] {
+  \textcolor{success}{PK} id\\
+  nome : CharField\\
+  valor : DecimalField (aporte)\\
+  meta : DecimalField (opt)\\
+  acumulado : DecimalField\\
+  FK user
+};
+
+% Atributos Investimento
+\node[attr, right=0.2cm of inv] {
+  \textcolor{success}{PK} id\\
+  nome : CharField\\
+  tipo : (6 tipos)\\
+  valor : DecimalField (aporte)\\
+  total : DecimalField\\
+  FK user
+};
+
+\end{tikzpicture}
+\caption{Diagrama Entidade-Relacionamento do FinancePro}
+\end{figure}
+
+\section{Detalhamento dos Modelos}
+
+\subsection{Receita}
+
+Representa qualquer fonte de renda do usuário.
+
+\begin{table}[H]
+\centering
+\caption{Campos do modelo Receita}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l X}
+\toprule
+Campo & Tipo & Descrição \\
+\midrule
+nome & CharField(200) & Nome descritivo da receita \\
+tipo & CharField(choices) & salary, vr, bonus, other \\
+valor & DecimalField(10,2) & Valor mensal em Reais \\
+user & ForeignKey(User) & Proprietário do registro \\
+criado & DateTimeField(auto) & Timestamp de criação \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{GastoFixo}
+
+Despesas mensais recorrentes com valor fixo. Possui o campo \texttt{pago} para controle de pagamento mensal (checklist no dashboard).
+
+\begin{table}[H]
+\centering
+\caption{Campos do modelo GastoFixo}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l X}
+\toprule
+Campo & Tipo & Descrição \\
+\midrule
+nome & CharField(200) & Nome do gasto fixo \\
+categoria & CharField(choices) & moradia, transporte, saude, educacao, servicos, seguros, outros \\
+valor & DecimalField(10,2) & Valor mensal em Reais \\
+pago & BooleanField & Status de pagamento do mês corrente \\
+user & ForeignKey(User) & Proprietário do registro \\
+criado & DateTimeField(auto) & Timestamp de criação \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{GastoVariavel}
+
+Despesas variáveis sem valor fixo mensal. Permite rastrear gastos por data.
+
+\begin{table}[H]
+\centering
+\caption{Campos do modelo GastoVariavel}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l X}
+\toprule
+Campo & Tipo & Descrição \\
+\midrule
+nome & CharField(200) & Nome do gasto variável \\
+categoria & CharField(choices) & alimentacao, lazer, vestuario, eletronicos, higiene, presentes, outros \\
+valor & DecimalField(10,2) & Valor gasto \\
+data & DateField & Data do gasto \\
+user & ForeignKey(User) & Proprietário do registro \\
+criado & DateTimeField(auto) & Timestamp de criação \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Reserva}
+
+Representa fundos de emergência ou poupanças com meta definida. Possui propriedades calculadas para exibição de progresso.
+
+\begin{table}[H]
+\centering
+\caption{Campos do modelo Reserva}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l X}
+\toprule
+Campo & Tipo & Descrição \\
+\midrule
+nome & CharField(200) & Nome da reserva \\
+valor & DecimalField(10,2) & Aporte mensal \\
+meta & DecimalField(10,2) & Valor-alvo da reserva (opcional) \\
+acumulado & DecimalField(10,2) & Total já acumulado \\
+user & ForeignKey(User) & Proprietário do registro \\
+\textit{progresso} & \textit{property} & \% de conclusão em relação à meta \\
+\textit{progresso\_cor} & \textit{property} & Cor CSS baseada no progresso \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Investimento}
+
+Registra posições de investimento com aporte mensal e total acumulado.
+
+\begin{table}[H]
+\centering
+\caption{Campos do modelo Investimento}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l X}
+\toprule
+Campo & Tipo & Descrição \\
+\midrule
+nome & CharField(200) & Nome do investimento \\
+tipo & CharField(choices) & renda\_fixa, renda\_variavel, fii, cripto, previdencia, outros \\
+valor & DecimalField(10,2) & Aporte mensal em Reais \\
+total & DecimalField(10,2) & Total já investido \\
+user & ForeignKey(User) & Proprietário do registro \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\chapter{Módulo Financeiro — Views e URLs}
+% ============================================================
+
+\section{Dashboard Principal}
+
+O dashboard é a view central do sistema, calculando automaticamente todos os KPIs financeiros do usuário.
+
+\begin{lstlisting}[style=django, caption={finance/views.py — Helper de totais}]
+def _totals(user):
+    rec  = user.receitas.aggregate(t=Sum('valor'))['t'] or Decimal('0')
+    fix  = user.gastos_fixos.aggregate(t=Sum('valor'))['t'] or Decimal('0')
+    vari = user.gastos_variaveis.aggregate(t=Sum('valor'))['t'] or Decimal('0')
+    res  = user.reservas.aggregate(t=Sum('valor'))['t'] or Decimal('0')
+    inv  = user.investimentos.aggregate(t=Sum('valor'))['t'] or Decimal('0')
+    gas  = fix + vari + res + inv
+    sal  = rec - gas
+    return {'rec': rec, 'fix': fix, 'vari': vari,
+            'res': res, 'inv': inv, 'gas': gas, 'sal': sal}
+\end{lstlisting}
+
+\textbf{KPIs calculados no dashboard:}
+
+\begin{itemize}
+  \item Total de receitas mensais
+  \item Total de gastos (fixos + variáveis + reservas + investimentos)
+  \item Saldo disponível (receitas $-$ todos os gastos)
+  \item Aportes mensais em reservas e investimentos
+  \item Checklist de pagamento dos gastos fixos (com progresso em tempo real)
+\end{itemize}
+
+\textbf{Gráficos gerados:}
+\begin{itemize}
+  \item \textbf{Donut (Chart.js):} Distribuição dos gastos por categoria com percentuais
+  \item \textbf{Barras (Chart.js):} Alocação percentual em relação à renda total
+\end{itemize}
+
+\section{Tabela de Rotas Completa}
+
+\begin{table}[H]
+\centering
+\caption{Todas as rotas do app finance}
+\begin{tabularx}{\textwidth}{>{\ttfamily\small}l c X}
+\toprule
+URL & Método & Descrição \\
+\midrule
+/dashboard/ & \httpget & Dashboard principal com KPIs \\
+\midrule
+\multicolumn{3}{l}{\textbf{Receitas}} \\
+/receitas/ & \httpget\,\httppost & Listar + adicionar receita \\
+/receitas/\{pk\}/editar/ & \httpget\,\httppost & Editar receita \\
+/receitas/\{pk\}/excluir/ & \httpget\,\httppost & Excluir receita \\
+\midrule
+\multicolumn{3}{l}{\textbf{Gastos Fixos}} \\
+/gastos-fixos/ & \httpget\,\httppost & Listar + adicionar gasto fixo \\
+/gastos-fixos/\{pk\}/editar/ & \httpget\,\httppost & Editar gasto fixo \\
+/gastos-fixos/\{pk\}/excluir/ & \httpget\,\httppost & Excluir gasto fixo \\
+/gastos-fixos/\{pk\}/toggle-pago/ & \httppost & Toggle status pago (AJAX) \\
+\midrule
+\multicolumn{3}{l}{\textbf{Gastos Variáveis}} \\
+/gastos-variaveis/ & \httpget\,\httppost & Listar + adicionar \\
+/gastos-variaveis/\{pk\}/editar/ & \httpget\,\httppost & Editar \\
+/gastos-variaveis/\{pk\}/excluir/ & \httpget\,\httppost & Excluir \\
+\midrule
+\multicolumn{3}{l}{\textbf{Reservas}} \\
+/reservas/ & \httpget\,\httppost & Listar + adicionar \\
+/reservas/\{pk\}/editar/ & \httpget\,\httppost & Editar \\
+/reservas/\{pk\}/excluir/ & \httpget\,\httppost & Excluir \\
+\midrule
+\multicolumn{3}{l}{\textbf{Investimentos}} \\
+/investimentos/ & \httpget\,\httppost & Listar + adicionar \\
+/investimentos/\{pk\}/editar/ & \httpget\,\httppost & Editar \\
+/investimentos/\{pk\}/excluir/ & \httpget\,\httppost & Excluir \\
+\midrule
+\multicolumn{3}{l}{\textbf{Módulos de IA}} \\
+/ai-coach/ & \httppost & Análise do Coach (JSON) \\
+/spending-analysis/ & \httpget & Página de análise de gastos \\
+/spending-analysis/run/ & \httppost & Executa análise (JSON) \\
+/budget-optimizer/ & \httpget & Página do otimizador \\
+/budget-optimizer/run/ & \httppost & Executa otimização (JSON) \\
+/investment-assistant/ & \httpget & Página do assistente \\
+/investment-assistant/run/ & \httppost & Executa análise (JSON) \\
+/whatif-simulator/ & \httpget & Página do chatbot \\
+/whatif-simulator/chat/ & \httppost & Envia mensagem ao chatbot (JSON) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Endpoint AJAX: Toggle de Pagamento}
+
+Um dos recursos mais interativos do sistema é o checklist de gastos fixos no dashboard. Ao clicar em um item, uma requisição AJAX é enviada sem recarregar a página:
+
+\begin{lstlisting}[style=django, caption={View de toggle de pagamento}]
+@login_required
+def toggle_gasto_fixo_pago(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'method not allowed'}, status=405)
+    obj = get_object_or_404(GastoFixo, pk=pk, user=request.user)
+    obj.pago = not obj.pago
+    obj.save()
+    all_fixos = request.user.gastos_fixos.all()
+    return JsonResponse({
+        'pago': obj.pago,
+        'pago_total': float(all_fixos.filter(pago=True).aggregate(
+                            t=Sum('valor'))['t'] or 0),
+        'pendente_total': float(all_fixos.filter(pago=False).aggregate(
+                               t=Sum('valor'))['t'] or 0),
+        'pago_count': all_fixos.filter(pago=True).count(),
+        'total_count': all_fixos.count(),
+    })
+\end{lstlisting}
+
+% ============================================================
+\chapter{Módulos de Inteligência Artificial}
+% ============================================================
+
+\section{Visão Geral dos Agentes}
+
+O FinancePro possui cinco agentes de IA independentes, todos integrados ao mesmo ecossistema LangChain + OpenAI. Cada agente recebe o contexto financeiro completo do usuário e retorna uma resposta estruturada via \texttt{JsonOutputParser} com modelos Pydantic.
+
+\begin{table}[H]
+\centering
+\caption{Comparativo dos cinco agentes de IA}
+\begin{tabularx}{\textwidth}{l l c X}
+\toprule
+Módulo & Classe & Temp. & Foco principal \\
+\midrule
+AI Coach & \texttt{FinancialCoach} & 0.6 & Pontuação de saúde e insights gerais \\
+Spending Analysis & \texttt{SpendingAnalyzer} & 0.5 & Detecção de desperdícios e riscos \\
+Budget Optimizer & \texttt{BudgetOptimizer} & 0.4 & Alocação ideal 50/30/20 \\
+Investment AI & \texttt{InvestmentAssistant} & 0.3 & Portfólio, risco e projeções \\
+What-if Simulator & \texttt{WhatIfSimulator} & 0.7 & Chatbot de cenários hipotéticos \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{tipbox}
+A temperature é reduzida progressivamente dos módulos mais \textit{conversacionais} (Coach, What-if) para os mais \textit{analíticos} (Investimentos), garantindo maior precisão nas projeções financeiras.
+\end{tipbox}
+
+\section{Construtor de Contexto Financeiro}
+
+Todos os agentes utilizam uma função específica para montar o contexto do usuário em texto estruturado. O padrão geral é:
+
+\begin{lstlisting}[style=python, caption={Estrutura do contexto financeiro enviado ao LLM}]
+=== SITUAÇÃO FINANCEIRA ATUAL ===
+Renda mensal total:        R$ 8.500,00
+Total gastos mensais:      R$ 6.200,00 (72.9% da renda)
+  -> Gastos fixos:         R$ 3.200,00 (37.6%)
+  -> Gastos variáveis:     R$ 1.500,00 (17.6%)
+  -> Aportes reservas:     R$ 800,00   (9.4%)
+  -> Aportes investimentos:R$ 700,00   (8.2%)
+SALDO LIVRE MENSAL:        R$ 2.300,00 (27.1% da renda)
+Patrimônio total:          R$ 42.000,00
+  -> Reservas acumuladas:  R$ 18.000,00
+  -> Investimentos:        R$ 24.000,00
+
+=== RECEITAS ===
+  • Salário CLT (Salário): R$ 8.000,00/mês
+  • Vale Refeição (VR/VA): R$ 500,00/mês
+
+=== GASTOS FIXOS MENSAIS ===
+  • Aluguel (Moradia): R$ 1.800,00
+  ...
+
+=== MÉTRICAS PARA CÁLCULO ===
+  Reserva emergência ideal (6x desp.): R$ 28.200,00
+  Cobertura atual:                     63.8%
+  Taxa de poupança:                    17.6%
+  Comprometimento da renda:            72.9%
+  Margem disponível para novos gastos: R$ 2.300,00/mês
+\end{lstlisting}
+
+\section{AI Financial Coach}
+
+\subsection{Objetivo}
+
+Analisar a saúde financeira geral do usuário, atribuir uma \textbf{pontuação de 0 a 100} e gerar insights personalizados com recomendações acionáveis.
+
+\subsection{Modelos de Saída (Pydantic)}
+
+\begin{lstlisting}[style=python, caption={finance/ai\_coach.py — Modelos Pydantic}]
+class Insight(BaseModel):
+    tipo:     str  # 'positivo', 'aviso', 'critico'
+    icone:    str  # Emoji representativo
+    titulo:   str  # Título curto do insight
+    mensagem: str  # Explicação com dados específicos em R$
+
+class FinancialAnalysis(BaseModel):
+    score:         int         # 0-100
+    score_label:   str         # 'Excelente', 'Bom', 'Regular', 'Crítico'
+    score_color:   str         # Cor hex (#16A34A, #F59E0B, etc.)
+    resumo:        str         # Diagnóstico geral em 2-3 frases
+    insights:      List[Insight]  # 3-5 insights
+    recomendacoes: List[str]   # Exatamente 3 recomendações acionáveis
+\end{lstlisting}
+
+\subsection{Lógica de Pontuação}
+
+A IA é instruída a calcular a pontuação com base nos seguintes benchmarks brasileiros:
+
+\begin{table}[H]
+\centering
+\caption{Benchmarks de pontuação de saúde financeira}
+\begin{tabularx}{\textwidth}{X l l}
+\toprule
+Critério & Referência & Impacto \\
+\midrule
+Gastos fixos / renda & $\leq$ 50\% & Alto \\
+Gastos variáveis / renda & $\leq$ 20\% & Médio \\
+Taxa de poupança & $\geq$ 20\% & Alto \\
+Reserva de emergência & $\geq$ 6$\times$ gastos mensais & Alto \\
+Saldo livre mensal & $> 0$ & Crítico \\
+Diversificação de investimentos & $> 1$ tipo & Médio \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Integração com o Dashboard}
+
+O AI Coach é o único agente integrado diretamente no dashboard, sem página própria. O botão \textit{"Analisar minhas finanças"} dispara uma chamada AJAX \texttt{POST /ai-coach/} e o resultado é renderizado dinamicamente com o anel de pontuação SVG animado.
+
+\section{AI Spending Analysis}
+
+\subsection{Objetivo}
+
+Identificar \textbf{desperdícios}, \textbf{padrões financeiros ruins} e \textbf{riscos} nos gastos do usuário, calculando a economia potencial total em R\$/ano.
+
+\subsection{Modelos de Saída (Pydantic)}
+
+\begin{lstlisting}[style=python, caption={finance/spending\_analyzer.py — Modelos Pydantic}]
+class WasteItem(BaseModel):
+    nome:               str  # Nome do desperdício
+    categoria:          str  # Categoria identificada
+    icone:              str  # Ícone Font Awesome
+    valor_mensal:       str  # "R$ 89/mês"
+    economia_potencial: str  # "R$ 1.068/ano"
+    motivo:             str  # Explicação do desperdício
+    acao:               str  # Ação para eliminar
+
+class BadPattern(BaseModel):
+    tipo:           str  # Tipo de padrão ruim
+    icone:          str
+    titulo:         str
+    descricao:      str
+    impacto_mensal: str  # R$ calculado
+    impacto_anual:  str  # R$ calculado
+
+class Risk(BaseModel):
+    nivel:         str  # 'alto', 'medio', 'baixo'
+    icone:         str
+    titulo:        str
+    descricao:     str
+    valor_em_risco:str  # R$ em risco
+    solucao:       str
+
+class SpendingAnalysis(BaseModel):
+    economia_total_mensal: str
+    economia_total_anual:  str
+    resumo:                str
+    desperdicios:          List[WasteItem]  # 2-5 itens
+    padroes_ruins:         List[BadPattern] # 2-4 itens
+    riscos:                List[Risk]       # 1-3 itens
+    quick_wins:            List[str]        # Exatamente 4
+\end{lstlisting}
+
+\subsection{Padrões Detectados}
+
+\begin{itemize}
+  \item Assinaturas esquecidas ou subutilizadas
+  \item Serviços duplicados (streaming, seguros, etc.)
+  \item Categorias acima dos benchmarks (alimentação $>$ 15\%, variáveis $>$ 20\%)
+  \item Ausência ou insuficiência de reserva de emergência
+  \item Concentração excessiva em uma categoria de gasto
+  \item Ausência de investimentos com renda disponível positiva
+\end{itemize}
+
+\section{AI Budget Optimizer}
+
+\subsection{Objetivo}
+
+Gerar um \textbf{orçamento ideal} para o usuário baseado na Regra 50/30/20 adaptada ao contexto brasileiro, com projeções de patrimônio para 1 e 5 anos.
+
+\subsection{Regra 50/30/20 Aplicada}
+
+\begin{table}[H]
+\centering
+\caption{Regra 50/30/20 adaptada ao Brasil}
+\begin{tabularx}{\textwidth}{l l l X}
+\toprule
+Bloco & \% Ideal & Categorias & Descrição \\
+\midrule
+Necessidades & $\leq$ 50\% & moradia, transporte, saúde, alimentação & Gastos essenciais indispensáveis \\
+Desejos & $\leq$ 30\% & lazer, vestuário, eletrônicos & Gastos não essenciais mas legítimos \\
+Futuro & $\geq$ 20\% & reservas, investimentos & Construção de patrimônio \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Modelos de Saída (Pydantic)}
+
+\begin{lstlisting}[style=python, caption={finance/budget\_optimizer.py — Modelos Pydantic}]
+class BudgetCategory(BaseModel):
+    categoria:        str   # Nome da categoria
+    icone_fa:         str   # Classe FA: 'fa-house', 'fa-car', etc.
+    cor:              str   # Cor hex
+    valor_atual:      float # Quanto gasta hoje
+    valor_ideal:      float # Quanto deveria gastar
+    percentual_ideal: float # % da renda ideal
+    diferenca:        float # valor_ideal - valor_atual
+    status:           str   # 'acima', 'abaixo', 'ideal'
+    justificativa:    str   # Por que este valor é ideal
+    acao:             str   # O que fazer para ajustar
+
+class BudgetOptimization(BaseModel):
+    renda_mensal:             float
+    regra_utilizada:          str          # "50/30/20"
+    resumo:                   str
+    categorias:               List[BudgetCategory]  # 6-8
+    economia_mensal_adicional:float
+    projecao_1_ano:           float
+    projecao_5_anos:          float        # Com juros compostos 10% a.a.
+    insight_principal:        str
+    proximos_passos:          List[str]    # Exatamente 3
+\end{lstlisting}
+
+\subsection{Cálculo de Projeções}
+
+As projeções de patrimônio são calculadas pelo LLM com base em:
+\begin{itemize}
+  \item \textbf{Projeção 1 ano:} economia\_mensal\_adicional $\times$ 12
+  \item \textbf{Projeção 5 anos:} Juros compostos com 10\% a.a., aplicados mensalmente sobre a economia acumulada
+\end{itemize}
+
+\section{AI Investment Assistant}
+
+\subsection{Objetivo}
+
+Analisar o portfólio de investimentos do usuário, diagnosticar o \textbf{perfil de risco atual vs. ideal}, sugerir realocações e gerar \textbf{projeções de patrimônio} para 10 e 20 anos.
+
+\subsection{Perfis de Risco e Alocações Ideais}
+
+\begin{table}[H]
+\centering
+\caption{Alocação ideal por perfil de risco}
+\begin{tabularx}{\textwidth}{l l l l l l}
+\toprule
+Perfil & Renda Fixa & FIIs & Renda Variável & Cripto & Outros \\
+\midrule
+Conservador & 60\% & 20\% & 15\% & 0\% & 5\% \\
+Moderado & 40\% & 25\% & 25\% & 0\% & 10\% \\
+Arrojado & 20\% & 20\% & 45\% & 5\% & 10\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Modelos de Saída (Pydantic)}
+
+\begin{lstlisting}[style=python, caption={finance/investment\_assistant.py — Modelos principais}]
+class RiskProfile(BaseModel):
+    perfil_atual:  str   # "Conservador", "Moderado", "Arrojado"
+    perfil_ideal:  str
+    score_atual:   int   # 0-100
+    score_ideal:   int
+    cor_atual:     str   # Cor hex
+    cor_ideal:     str
+    diagnostico:   str   # Explicação do gap entre atual e ideal
+
+class AssetAllocation(BaseModel):
+    classe:           str   # Classe de ativo
+    icone_fa:         str   # 'fa-shield-halved', 'fa-building', etc.
+    cor:              str
+    percentual_atual: float
+    percentual_ideal: float
+    valor_atual:      float
+    valor_ideal:      float
+    diferenca_pct:    float
+    justificativa:    str
+
+class InvestmentAnalysis(BaseModel):
+    valor_total_investido:    float
+    aporte_mensal_atual:      float
+    aporte_mensal_ideal:      float   # 20-30% da renda
+    percentual_renda_atual:   float
+    percentual_renda_ideal:   float
+    resumo:                   str
+    perfil_risco:             RiskProfile
+    alocacao:                 List[AssetAllocation]   # 4-6
+    sugestoes:                List[InvestmentSuggestion]  # 3-5
+    projecao_10_anos:         float   # Taxa 12% a.a.
+    projecao_20_anos:         float
+    projecao_conservadora_10: float   # Taxa 8% a.a.
+    insight_premium:          str
+    alertas:                  List[str]  # 1-3
+\end{lstlisting}
+
+\subsection{Fórmula de Projeção}
+
+As projeções utilizam a fórmula de valor futuro com juros compostos mensais:
+
+\begin{equation}
+FV = PV \cdot (1 + r)^n + PMT \cdot \frac{(1 + r)^n - 1}{r}
+\end{equation}
+
+Onde:
+\begin{itemize}
+  \item $FV$ = Valor futuro (patrimônio projetado)
+  \item $PV$ = Patrimônio atual investido
+  \item $r$ = Taxa mensal (12\% a.a. $\approx$ 0.949\% a.m. | 8\% a.a. $\approx$ 0.643\% a.m.)
+  \item $n$ = Número de meses (120 para 10 anos, 240 para 20 anos)
+  \item $PMT$ = Aporte mensal ideal
+\end{itemize}
+
+\section{AI What-if Simulator}
+
+\subsection{Objetivo}
+
+Chatbot conversacional que permite ao usuário fazer perguntas hipotéticas (\textit{"e se eu..."}) e recebe respostas com \textbf{impactos financeiros calculados} com base nos dados reais, em formato estruturado com veredicto, impactos e conselho.
+
+\subsection{Gerenciamento do Histórico de Conversa}
+
+\begin{lstlisting}[style=python, caption={finance/whatif\_simulator.py — Formatação do histórico}]
+def _format_history(self, historico: list) -> str:
+    if not historico:
+        return "Nenhuma mensagem anterior — esta é a primeira pergunta."
+    lines = []
+    for msg in historico[-8:]:   # Últimas 4 trocas (8 mensagens)
+        role = "Usuário" if msg.get("role") == "user" else "Assistente"
+        content = msg.get("content", "")
+        if role == "Assistente" and isinstance(content, dict):
+            content = content.get("resposta", str(content))
+        lines.append(f"{role}: {content}")
+    return "\n".join(lines)
+\end{lstlisting}
+
+\subsection{Modelos de Saída (Pydantic)}
+
+\begin{lstlisting}[style=python, caption={finance/whatif\_simulator.py — Modelos Pydantic}]
+class ImpactoItem(BaseModel):
+    label:    str  # "Redução na reserva de emergência"
+    valor:    str  # "42%", "R$ 1.240/mês", "18 meses"
+    tipo:     str  # 'positivo', 'negativo', 'neutro'
+    icone_fa: str  # Classe FA: 'fa-arrow-down', 'fa-clock'
+
+class WhatIfResponse(BaseModel):
+    veredicto:       str  # 'positivo','cuidado','negativo','critico'
+    veredicto_label: str  # 'Ótima ideia!','Viável','Atenção','Inviável'
+    veredicto_cor:   str  # Cor hex correspondente
+    resposta:        str  # Análise conversacional em 2-4 frases
+    impactos:        List[ImpactoItem]  # 2-4 impactos calculados
+    conselho:        str  # Recomendação específica e acionável
+\end{lstlisting}
+
+\subsection{Exemplos de Cenários Suportados}
+
+\begin{table}[H]
+\centering
+\caption{Exemplos de simulações suportadas}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+Pergunta hipotética & Cálculos realizados \\
+\midrule
+"Se eu comprar um carro?" & Parcela estimada + impacto no saldo + comprometimento da renda \\
+"Se eu trocar de emprego?" & Impacto na renda + efeito cascata nos gastos + viabilidade \\
+"Se eu dobrar meus aportes?" & Projeção de patrimônio adicional em X anos \\
+"E se eu tirar férias caras?" & Impacto na reserva + meses para recompor \\
+"E se eu financiar um imóvel?" & Parcela estimada + comprometimento total da renda \\
+"Se eu tiver um filho?" & Gastos adicionais estimados + impacto no saldo livre \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Sistema de Veredictos}
+
+\begin{table}[H]
+\centering
+\caption{Sistema de veredictos do What-if Simulator}
+\begin{tabularx}{\textwidth}{l l l X}
+\toprule
+Veredicto & Label & Cor & Critério \\
+\midrule
+positivo & Ótima ideia! & \colorbox{success!20}{\texttt{\#16A34A}} & Melhora a situação financeira \\
+cuidado & Atenção & \colorbox{warning!20}{\texttt{\#F59E0B}} & Viável com planejamento \\
+negativo & Risco Alto & \colorbox{primary!20}{\texttt{\#F97316}} & Impacto negativo significativo \\
+critico & Inviável & \colorbox{danger!20}{\texttt{\#DC2626}} & Comprometeria seriamente as finanças \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+\chapter{Interface do Usuário}
+% ============================================================
+
+\section{Sistema de Design}
+
+A interface do FinancePro foi construída com um \textbf{design system próprio} baseado em CSS Custom Properties (variáveis), sem dependência de frameworks como Bootstrap ou Tailwind.
+
+\subsection{Paleta de Cores}
+
+\begin{table}[H]
+\centering
+\caption{Paleta de cores do sistema}
+\begin{tabularx}{\textwidth}{>{\ttfamily}l l l X}
+\toprule
+Variável CSS & Hex & Amostra & Uso \\
+\midrule
+--primary & \#FF5710 & \colorbox{primary}{\color{white}\texttt{\ \ \ \ \ \ }} & Ações principais, destaques \\
+--secondary & \#1E1B6E & \colorbox{secondary}{\color{white}\texttt{\ \ \ \ \ \ }} & Sidebar, títulos de seção \\
+--success & \#16A34A & \colorbox{success}{\color{white}\texttt{\ \ \ \ \ \ }} & Positivo, pago, lucro \\
+--danger & \#DC2626 & \colorbox{danger}{\color{white}\texttt{\ \ \ \ \ \ }} & Erro, negativo, gastos \\
+--warning & \#D97706 & \colorbox{warning}{\color{white}\texttt{\ \ \ \ \ \ }} & Atenção, reservas \\
+--purple & \#7C3AED & \colorbox{purple}{\color{white}\texttt{\ \ \ \ \ \ }} & Investimentos, PRO \\
+--info & \#0EA5E9 & \colorbox{info}{\color{white}\texttt{\ \ \ \ \ \ }} & What-if, informações \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Componentes Reutilizáveis}
+
+Os seguintes componentes CSS são definidos globalmente no \texttt{base.html} e usados em todas as páginas:
+
+\begin{itemize}
+  \item \textbf{.stat-card} — Card de KPI com accent bar, ícone e valor em destaque
+  \item \textbf{.section-card} — Card de seção com header e body padrão
+  \item \textbf{.badge} — Etiqueta colorida por categoria (salário, moradia, lazer, etc.)
+  \item \textbf{.btn} — Botões com variações: primary, secondary, success, danger, purple, outline, ghost
+  \item \textbf{.progress-bar} / \textbf{.progress-fill} — Barras de progresso com animação CSS
+  \item \textbf{.form-input} / \textbf{.form-select} — Campos de formulário com foco em laranja
+  \item \textbf{.nav-item} — Item de navegação com estado ativo e hover
+  \item \textbf{.nav-badge} — Badge do sidebar (IA, PRO)
+\end{itemize}
+
+\section{Layout Principal}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  box/.style={rectangle, draw=codeborder, fill=codebg, rounded corners=4pt, align=center, font=\small},
+]
+\draw[fill=secondary!5, draw=codeborder, rounded corners=8pt] (0,0) rectangle (14,10);
+
+% Sidebar
+\draw[fill=secondary, rounded corners=4pt] (0.2,0.2) rectangle (3.2,9.8);
+\node[color=white, font=\small\bfseries] at (1.7,9.2) {FinancePro};
+\node[color=white!60!secondary, font=\footnotesize] at (1.7,8.6) {Sidebar};
+\node[color=white!70, font=\footnotesize, align=left] at (1.7,7) {Dashboard\\ Receitas\\ Gastos Fixos\\ Gastos Var.\\ Reservas\\ Investimentos\\ ──────\\ Spending AI\\ Budget AI\\ Investment AI\\ What-if AI};
+
+% Header
+\draw[fill=white, draw=codeborder] (3.3,8.8) rectangle (13.8,9.8);
+\node[font=\small] at (6,9.3) {Dashboard};
+\node[font=\footnotesize\color{gray3}] at (12,9.3) {📅 01/04/2026};
+
+% Content area
+\draw[fill=white, draw=codeborder, rounded corners=3pt] (3.5,7.5) rectangle (13.6,8.6);
+\node[font=\footnotesize] at (8.5,8.05) {KPI Cards (Receitas / Gastos / Reservas / Investimentos / Saldo)};
+
+\draw[fill=white, draw=codeborder, rounded corners=3pt] (3.5,4.2) rectangle (8.0,7.3);
+\node[font=\footnotesize] at (5.75,5.75) {Gráfico Donut};
+
+\draw[fill=white, draw=codeborder, rounded corners=3pt] (8.2,4.2) rectangle (10.8,7.3);
+\node[font=\footnotesize] at (9.5,5.75) {Gráfico Barras};
+
+\draw[fill=white, draw=codeborder, rounded corners=3pt] (11.0,4.2) rectangle (13.6,7.3);
+\node[font=\footnotesize\color{secondary}] at (12.3,6.5) {Gastos Fixos\\do Mês};
+\node[font=\tiny\color{gray3}] at (12.3,5.5) {Checklist\\interativo};
+
+\draw[fill=white, draw=codeborder, rounded corners=3pt] (3.5,1.0) rectangle (13.6,4.0);
+\node[font=\footnotesize\color{secondary}\bfseries] at (8.5,2.5) {AI Financial Coach};
+\end{tikzpicture}
+\caption{Esquema do layout do Dashboard principal}
+\end{figure}
+
+\section{Template Base}
+
+O arquivo \texttt{base.html} é a fundação de toda a interface e define:
+
+\begin{itemize}
+  \item \textbf{Sidebar fixo} com navegação hierárquica (Visão Geral, Finanças, Inteligência Artificial)
+  \item \textbf{Header sticky} com breadcrumb da página atual e data
+  \item \textbf{Sistema de mensagens Django} estilizado (success, error, warning, info)
+  \item \textbf{Blocos de template:} \texttt{title}, \texttt{page\_title}, \texttt{page\_sub}, \texttt{header\_right}, \texttt{content}, \texttt{extra\_js}
+  \item \textbf{Responsividade mobile} com overlay e toggle do sidebar
+\end{itemize}
+
+\section{Páginas de Autenticação}
+
+\begin{description}
+  \item[\texttt{login.html}] Layout split-screen: painel esquerdo com gradiente e informações do produto; painel direito com formulário de login.
+  \item[\texttt{register.html}] Formulário de cadastro com validação em tempo real.
+  \item[\texttt{profile.html}] Duas seções: edição de dados pessoais e troca de senha, com upload de foto de perfil.
+\end{description}
+
+\section{Interfaces dos Módulos de IA}
+
+\begin{description}
+  \item[\textbf{Dashboard (AI Coach)}] Painel integrado com anel SVG animado para pontuação, grid de insights e lista numerada de recomendações. Três estados: idle, loading (spinner), results.
+
+  \item[\textbf{Spending Analysis}] Página dedicada com KPIs de economia potencial, grid de desperdícios com cards coloridos, lista de padrões ruins e grade de quick wins.
+
+  \item[\textbf{Budget Optimizer}] Exibe categorias com \textbf{dupla barra de progresso} (valor atual em cinza, valor ideal em cor da categoria), diferença em R\$ e status badge (acima/abaixo/ideal).
+
+  \item[\textbf{Investment Assistant}] Interface premium com badge PRO, duas barras de perfil de risco animadas, tabela de alocação com gap visual, cards de sugestões coloridos por tipo de ação e três cards de projeção.
+
+  \item[\textbf{What-if Simulator}] Interface de chatbot com bolhas de mensagem (usuário à direita, IA à esquerda), card estruturado de resposta com verdict bar colorida, grid de impactos e box de conselho. Painel lateral com sugestões clicáveis e legenda de veredictos.
+\end{description}
+
+% ============================================================
+\chapter{Segurança}
+% ============================================================
+
+\section{Mecanismos Implementados}
+
+\begin{table}[H]
+\centering
+\caption{Recursos de segurança implementados}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+Mecanismo & Descrição \\
+\midrule
+Autenticação & Sistema de sessões Django com e-mail como identificador único \\
+Autorização & Decorator \texttt{@login\_required} em todas as views protegidas \\
+CSRF Protection & Middleware Django + token em todas as requisições POST/AJAX \\
+Isolamento de dados & Todas as queries filtram por \texttt{user=request.user} (sem acesso cruzado) \\
+Hashing de senhas & \texttt{make\_password()} via Django (PBKDF2 + SHA256 por padrão) \\
+ORM & Proteção automática contra SQL Injection via Django ORM \\
+Variáveis de ambiente & Chaves sensíveis em \texttt{.env} via \texttt{python-dotenv} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Pontos de Atenção para Produção}
+
+\begin{dangerbox}
+Os itens abaixo são aceitáveis em ambiente de desenvolvimento mas \textbf{devem ser corrigidos antes do deploy em produção:}
+\begin{itemize}
+  \item \texttt{DEBUG = True} deve ser alterado para \texttt{False}
+  \item \texttt{ALLOWED\_HOSTS = ['*']} deve listar apenas os domínios reais
+  \item \texttt{SECRET\_KEY} deve ser gerada com \texttt{python -c "from django.core.management.utils import get\_random\_secret\_key; print(get\_random\_secret\_key())"}
+  \item A \texttt{OPENAI\_API\_KEY} deve ser armazenada em cofre de segredos (AWS Secrets Manager, HashiCorp Vault, variáveis de ambiente do servidor)
+  \item SQLite deve ser substituído por PostgreSQL ou MySQL
+  \item Os endpoints de IA (\texttt{/*/run/}) não possuem rate limiting — implementar para evitar abuso de API
+\end{itemize}
+\end{dangerbox}
+
+\section{Checklist de Segurança para Deploy}
+
+\begin{enumerate}
+  \item[$\square$] \texttt{DEBUG = False} no \texttt{.env} de produção
+  \item[$\square$] \texttt{SECRET\_KEY} gerado aleatoriamente e único
+  \item[$\square$] \texttt{ALLOWED\_HOSTS} configurado com domínio real
+  \item[$\square$] HTTPS/SSL habilitado (Nginx + Certbot)
+  \item[$\square$] Banco de dados PostgreSQL configurado
+  \item[$\square$] \texttt{OPENAI\_API\_KEY} em variável de ambiente do servidor
+  \item[$\square$] Rate limiting nos endpoints \texttt{/*/run/} (ex: django-ratelimit)
+  \item[$\square$] \texttt{SECURE\_SSL\_REDIRECT = True}
+  \item[$\square$] \texttt{SESSION\_COOKIE\_SECURE = True}
+  \item[$\square$] \texttt{CSRF\_COOKIE\_SECURE = True}
+  \item[$\square$] \texttt{.env} adicionado ao \texttt{.gitignore}
+\end{enumerate}
+
+% ============================================================
+\chapter{Deploy e Produção}
+% ============================================================
+
+\section{Requisitos de Servidor}
+
+\begin{itemize}
+  \item Sistema operacional: Ubuntu 22.04 LTS (recomendado)
+  \item Python 3.10+
+  \item Nginx (proxy reverso)
+  \item Gunicorn (WSGI server)
+  \item PostgreSQL 14+ (banco de dados de produção)
+  \item Certbot (SSL/TLS gratuito via Let's Encrypt)
+\end{itemize}
+
+\section{Stack de Produção Recomendada}
+
+\begin{lstlisting}[style=bash, caption={Deploy com Gunicorn + Nginx}]
+# 1. Instalar dependências do servidor
+sudo apt update && sudo apt install python3 python3-pip nginx postgresql
+
+# 2. Configurar banco de dados PostgreSQL
+sudo -u postgres psql -c "CREATE DATABASE financepro;"
+sudo -u postgres psql -c "CREATE USER fpuser WITH PASSWORD 'senha_segura';"
+sudo -u postgres psql -c "GRANT ALL ON DATABASE financepro TO fpuser;"
+
+# 3. Instalar dependências Python
+pip3 install -r requirements_django.txt gunicorn psycopg2-binary
+
+# 4. Coletar arquivos estáticos
+python manage.py collectstatic --noinput
+
+# 5. Aplicar migrações
+python manage.py migrate
+
+# 6. Iniciar Gunicorn
+gunicorn finance_project.wsgi:application \
+  --workers 3 \
+  --bind 127.0.0.1:8000 \
+  --daemon
+
+# 7. Configurar Nginx como proxy reverso
+# /etc/nginx/sites-available/financepro
+server {
+    listen 80;
+    server_name seudominio.com.br;
+    location / { proxy_pass http://127.0.0.1:8000; }
+    location /static/ { alias /path/to/static/; }
+    location /media/ { alias /path/to/media/; }
+}
+\end{lstlisting}
+
+\section{Variáveis de Ambiente de Produção}
+
+\begin{lstlisting}[style=bash, caption={.env de produção (exemplo)}]
+SECRET_KEY=gere_uma_chave_aleatoria_de_50_caracteres_aqui
+DEBUG=False
+ALLOWED_HOSTS=seudominio.com.br,www.seudominio.com.br
+
+# Banco de dados
+DATABASE_URL=postgres://fpuser:senha@localhost:5432/financepro
+
+# OpenAI
+OPENAI_API_KEY=sk-...
+\end{lstlisting}
+
+% ============================================================
+\chapter{Migrações do Banco de Dados}
+% ============================================================
+
+\section{Histórico de Migrações}
+
+\begin{table}[H]
+\centering
+\caption{Histórico de migrações do projeto}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+App & Migração & Alteração \\
+\midrule
+accounts & 0001\_initial & Criação do modelo User customizado com campos email, names, photo \\
+finance & 0001\_initial & Criação dos modelos Receita, GastoFixo, GastoVariavel, Reserva, Investimento \\
+finance & 0002\_gastofixo\_pago & Adição do campo \texttt{pago} (BooleanField, default=False) ao modelo GastoFixo \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Comandos de Migração}
+
+\begin{lstlisting}[style=bash, caption={Comandos Django para gerenciamento de banco de dados}]
+# Verificar status das migrações
+python manage.py showmigrations
+
+# Criar novas migrações após alterar models.py
+python manage.py makemigrations
+
+# Aplicar todas as migrações pendentes
+python manage.py migrate
+
+# Aplicar migrações de um app específico
+python manage.py migrate finance
+python manage.py migrate accounts
+
+# Reverter para uma migração específica
+python manage.py migrate finance 0001_initial
+\end{lstlisting}
+
+% ============================================================
+\chapter{Guia de Extensão}
+% ============================================================
+
+\section{Adicionando um Novo Modelo Financeiro}
+
+\begin{enumerate}
+  \item Criar o modelo em \texttt{finance/models.py} com ForeignKey para User
+  \item Criar o ModelForm em \texttt{finance/forms.py}
+  \item Adicionar as views CRUD em \texttt{finance/views.py} com \texttt{@login\_required}
+  \item Registrar as URLs em \texttt{finance/urls.py}
+  \item Criar o template HTML estendendo \texttt{base.html}
+  \item Executar \texttt{python manage.py makemigrations \&\& python manage.py migrate}
+\end{enumerate}
+
+\section{Adicionando um Novo Agente de IA}
+
+\begin{enumerate}
+  \item Criar o arquivo \texttt{finance/nome\_agente.py} seguindo o padrão das classes existentes:
+    \begin{itemize}
+      \item Definir os modelos Pydantic de saída
+      \item Criar a classe com \texttt{\_\_init\_\_}, \texttt{\_build\_prompt}, \texttt{\_build\_chain}, \texttt{analyse}
+      \item Criar a função \texttt{\_build\_*\_context(user)} para montar o contexto
+    \end{itemize}
+  \item Adicionar as views (GET para renderizar, POST para executar) em \texttt{views.py}
+  \item Registrar as URLs em \texttt{urls.py}
+  \item Criar o template HTML com os três estados: idle, loading, results
+  \item Adicionar o link no sidebar em \texttt{base.html}
+\end{enumerate}
+
+\section{Alterando o Modelo de LLM}
+
+Para trocar o modelo ou provedor de LLM, basta alterar o \texttt{\_\_init\_\_} de qualquer agente:
+
+\begin{lstlisting}[style=python, caption={Trocar modelo em qualquer agente}]
+# Usar GPT-4o (mais preciso, mais caro)
+self.model = ChatOpenAI(model="gpt-4o", temperature=0.4)
+
+# Usar GPT-3.5-turbo (mais rápido e barato)
+self.model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.6)
+
+# Usar Anthropic Claude (via LangChain)
+from langchain_anthropic import ChatAnthropic
+self.model = ChatAnthropic(model="claude-3-5-sonnet-20241022")
+\end{lstlisting}
+
+% ============================================================
+\chapter{Referências e Tecnologias}
+% ============================================================
+
+\begin{table}[H]
+\centering
+\caption{Documentações oficiais}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+Tecnologia & URL de Referência \\
+\midrule
+Django 4.2 & \url{https://docs.djangoproject.com/en/4.2/} \\
+LangChain & \url{https://python.langchain.com/docs/} \\
+OpenAI API & \url{https://platform.openai.com/docs/} \\
+Pydantic v2 & \url{https://docs.pydantic.dev/latest/} \\
+Chart.js 4.4 & \url{https://www.chartjs.org/docs/latest/} \\
+Font Awesome 6.5 & \url{https://fontawesome.com/icons} \\
+python-dotenv & \url{https://pypi.org/project/python-dotenv/} \\
+Gunicorn & \url{https://gunicorn.org/} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ── Página final ─────────────────────────────────────────────
+\clearpage
+\thispagestyle{empty}
+
+\begin{tikzpicture}[remember picture, overlay]
+  \fill[secondary] (current page.south west) rectangle
+    ([yshift=5cm]current page.south east);
+  \fill[primary] ([yshift=5cm]current page.south west) rectangle
+    ([yshift=4.5cm]current page.south east);
+\end{tikzpicture}
+
+\vspace*{\fill}
+
+\begin{center}
+  {\LARGE\bfseries\color{secondary} FinancePro}\\[8pt]
+  {\large\color{gray3} Documentação Técnica — v1.0}\\[24pt]
+  {\color{gray5}\small Desenvolvido com Django · LangChain · OpenAI GPT-4o-mini}\\[6pt]
+  {\color{gray5}\small \textit{Gestão financeira inteligente para o mercado brasileiro}}\\[40pt]
+\end{center}
+
+\begin{center}
+  \color{white}
+  {\large\bfseries Tecnologias Principais}\\[14pt]
+  \begin{tabular}{ccccc}
+    \textbf{Django 4.2} & \textbf{LangChain} & \textbf{OpenAI} & \textbf{Pydantic v2} & \textbf{Chart.js}\\[4pt]
+    Python 3.x & GPT-4o-mini & SQLite3 & Font Awesome & Inter\\
+  \end{tabular}
+\end{center}
+
+\end{document}

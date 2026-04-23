@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Receitas{% endblock %}
+{% block page_title %}Receitas{% endblock %}
+{% block page_sub %}Salário, VR/VA, bônus e outras entradas{% endblock %}
+
+{% block header_right %}
+<div class="header-chip" style="background:#f0fdf4;border-color:#bbf7d0;color:#15803d;font-weight:600">
+  💰 Total: R$ {{ total|floatformat:2 }}
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="section-card">
+  <div class="section-header">
+    <div class="section-header-text">
+      <h3>Nova receita</h3>
+      <p>Cadastre uma fonte de renda</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-row">
+        {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for e in field.errors %}<span class="form-error">⚠ {{ e }}</span>{% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success">
+          <span>+</span> Adicionar receita
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="section-card">
+  <div class="section-header">
+    <div class="section-header-text">
+      <h3>Minhas receitas</h3>
+      <p>{{ items|length }} fonte(s) cadastrada(s)</p>
+    </div>
+    <div class="section-header-meta">
+      Total: <strong class="text-success">R$ {{ total|floatformat:2 }}</strong>
+    </div>
+  </div>
+
+  {% if items %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Descrição</th>
+          <th>Tipo</th>
+          <th class="text-right">Valor</th>
+          <th class="text-right">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in items %}
+        <tr>
+          <td style="font-weight:500">{{ r.nome }}</td>
+          <td>
+            <span class="badge {% if r.tipo == 'salary' %}b-salary{% elif r.tipo == 'vr' %}b-vr{% elif r.tipo == 'bonus' %}b-bonus{% else %}b-other{% endif %}">
+              {{ r.get_tipo_display }}
+            </span>
+          </td>
+          <td class="text-right font-bold text-success">R$ {{ r.valor|floatformat:2 }}</td>
+          <td class="text-right" style="white-space:nowrap">
+            <a href="{% url 'receita_edit' r.pk %}" class="btn-icon-edit">✏ Editar</a>
+            <a href="{% url 'receita_delete' r.pk %}" class="btn-icon-del" style="margin-left:6px">🗑 Excluir</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--surface-2)">
+          <td colspan="2" style="padding:12px 16px;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Total</td>
+          <td class="text-right" style="padding:12px 16px;font-size:15px;font-weight:700;color:var(--success)">R$ {{ total|floatformat:2 }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <div class="empty-icon">💰</div>
+    <h3>Nenhuma receita cadastrada</h3>
+    <p>Adicione seu salário, VR/VA ou bônus acima<br>para começar a organizar suas finanças.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

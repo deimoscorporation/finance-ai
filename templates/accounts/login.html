@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Entrar — FinancePro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary:#ff5710; --primary-dark:#e04500;
+      --secondary:#1e1b6e;
+      --danger:#DC2626; --border:#E2E8F0;
+      --text:#1E293B; --text-sec:#64748B; --text-muted:#94A3B8;
+      --bg:#F1F5F9; --surface:#fff;
+      --shadow-md:0 4px 20px rgba(0,0,0,.08);
+      --shadow-lg:0 16px 48px rgba(0,0,0,.12);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;background:var(--bg);-webkit-font-smoothing:antialiased;}
+    a{text-decoration:none;color:var(--primary);}
+    a:hover{text-decoration:underline;}
+
+    /* Split */
+    .split{display:flex;min-height:100vh;width:100%;}
+
+    /* Left panel */
+    .panel-left{
+      width:480px;flex-shrink:0;
+      background:linear-gradient(150deg,#1a1760 0%,#0f0d4a 60%,#1a1455 100%);
+      display:flex;flex-direction:column;justify-content:space-between;
+      padding:44px 48px;color:white;position:relative;overflow:hidden;
+    }
+    .panel-left::before{
+      content:'';position:absolute;top:-80px;right:-80px;
+      width:320px;height:320px;border-radius:50%;
+      background:rgba(255,87,16,.12);pointer-events:none;
+    }
+    .panel-left::after{
+      content:'';position:absolute;bottom:-60px;left:-40px;
+      width:240px;height:240px;border-radius:50%;
+      background:rgba(255,255,255,.04);pointer-events:none;
+    }
+    .brand{display:flex;align-items:center;gap:12px;position:relative;z-index:1;}
+    .brand-icon{
+      width:44px;height:44px;border-radius:12px;
+      background:var(--primary);display:flex;align-items:center;justify-content:center;
+      font-size:22px;box-shadow:0 6px 20px rgba(255,87,16,.45);
+    }
+    .brand-text h1{font-size:20px;font-weight:700;}
+    .brand-text h1 span{color:var(--primary);}
+    .brand-text p{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px;}
+
+    .panel-hero{position:relative;z-index:1;margin-top:60px;}
+    .panel-hero h2{font-size:30px;font-weight:800;line-height:1.25;letter-spacing:-.5px;margin-bottom:14px;}
+    .panel-hero h2 span{color:var(--primary);}
+    .panel-hero p{font-size:14px;color:rgba(255,255,255,.55);line-height:1.7;max-width:340px;}
+
+    .features{position:relative;z-index:1;margin-top:52px;display:flex;flex-direction:column;gap:16px;}
+    .feature{display:flex;align-items:center;gap:14px;}
+    .feature-dot{
+      width:34px;height:34px;border-radius:9px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:15px;
+    }
+    .feature-text{font-size:13px;color:rgba(255,255,255,.7);line-height:1.45;}
+    .feature-text strong{color:white;display:block;font-weight:600;margin-bottom:1px;}
+
+    .panel-footer{position:relative;z-index:1;font-size:11px;color:rgba(255,255,255,.25);}
+
+    /* Right panel */
+    .panel-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 28px;}
+    .auth-box{width:100%;max-width:420px;}
+
+    .auth-header{margin-bottom:32px;}
+    .auth-header h2{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px;}
+    .auth-header p{font-size:14px;color:var(--text-sec);margin-top:6px;line-height:1.5;}
+
+    /* Form */
+    .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+    .form-group label{font-size:12px;font-weight:600;color:var(--text);}
+    .form-input{
+      padding:11px 14px;
+      border:1.5px solid var(--border);border-radius:10px;
+      font-size:14px;color:var(--text);background:white;
+      outline:none;transition:border-color .18s,box-shadow .18s;
+      font-family:inherit;width:100%;
+    }
+    .form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,87,16,.1);}
+    .form-input:hover:not(:focus){border-color:#CBD5E1;}
+    .form-error{font-size:11px;color:var(--danger);margin-top:3px;}
+
+    .btn-submit{
+      width:100%;padding:13px;background:var(--primary);color:white;
+      border:none;border-radius:10px;font-size:15px;font-weight:700;
+      cursor:pointer;font-family:inherit;
+      transition:all .2s;letter-spacing:.1px;
+      box-shadow:0 4px 14px rgba(255,87,16,.35);
+    }
+    .btn-submit:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,87,16,.45);}
+    .btn-submit:active{transform:none;box-shadow:none;}
+
+    .divider-or{display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--text-muted);font-size:12px;}
+    .divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    .auth-footer{text-align:center;font-size:13px;color:var(--text-sec);margin-top:28px;}
+    .auth-footer a{color:var(--primary);font-weight:600;}
+
+    .msg{padding:12px 14px;border-radius:10px;font-size:13px;display:flex;gap:8px;margin-bottom:20px;font-weight:500;}
+    .msg-error{background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA;}
+
+    /* Alert box */
+    .welcome-chip{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 14px;border-radius:999px;
+      background:rgba(255,87,16,.08);
+      border:1px solid rgba(255,87,16,.2);
+      font-size:12px;font-weight:600;color:var(--primary);
+      margin-bottom:20px;
+    }
+
+    @media(max-width:900px){.panel-left{width:360px;padding:36px 36px;}}
+    @media(max-width:720px){.panel-left{display:none;}.panel-right{padding:40px 20px;}}
+  </style>
+</head>
+<body>
+<div class="split">
+
+  <!-- Left -->
+  <div class="panel-left">
+    <div class="brand">
+      <div class="brand-icon">💎</div>
+      <div class="brand-text">
+        <h1>Finance<span>Pro</span></h1>
+        <p>Gestão financeira pessoal</p>
+      </div>
+    </div>
+
+    <div class="panel-hero">
+      <h2>Organize sua vida <span>financeira</span> com inteligência</h2>
+      <p>Dashboard completo, controle de gastos, reservas e investimentos — tudo em um só lugar.</p>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-dot" style="background:rgba(22,163,74,.15)">💰</div>
+          <div class="feature-text"><strong>Controle de receitas</strong>Salário, VR/VA, bônus e muito mais.</div>
+        </div>
+        <div class="feature">
+          <div class="feature-dot" style="background:rgba(220,38,38,.12)">📊</div>
+          <div class="feature-text"><strong>Gráficos em tempo real</strong>Visualize como seu dinheiro está alocado.</div>
+        </div>
+        <div class="feature">
+          <div class="feature-dot" style="background:rgba(124,58,237,.12)">🎯</div>
+          <div class="feature-text"><strong>Metas de reserva</strong>Acompanhe seu progresso financeiro.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-footer">© 2025 FinancePro · Dados armazenados com segurança</div>
+  </div>
+
+  <!-- Right -->
+  <div class="panel-right">
+    <div class="auth-box">
+
+      <div class="auth-header">
+        <div class="welcome-chip">👋 Bem-vindo(a) de volta</div>
+        <h2>Acesse sua conta</h2>
+        <p>Informe suas credenciais para continuar gerenciando suas finanças.</p>
+      </div>
+
+      {% if messages %}
+        {% for msg in messages %}
+        <div class="msg msg-error">❌ {{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for e in field.errors %}<span class="form-error">⚠ {{ e }}</span>{% endfor %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn-submit">Entrar na conta →</button>
+      </form>
+
+      <div class="auth-footer">
+        Não tem conta ainda? <a href="{% url 'register' %}">Criar conta grátis</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

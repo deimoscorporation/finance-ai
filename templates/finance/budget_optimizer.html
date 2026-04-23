@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% block title %}Budget Optimizer{% endblock %}
+{% block page_title %}AI Budget Optimizer{% endblock %}
+{% block page_sub %}Orçamento ideal calculado por IA com base na sua renda{% endblock %}
+
+{% block header_right %}
+<button id="run-btn" onclick="runOptimizer()"
+  style="display:flex;align-items:center;gap:8px;background:var(--primary);color:white;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s"
+  onmouseover="this.style.background='var(--primary-dark)';this.style.transform='translateY(-1px)'"
+  onmouseout="this.style.background='var(--primary)';this.style.transform='none'">
+  <span id="run-icon"><i class="fa-solid fa-sliders"></i></span>
+  <span id="run-text">Otimizar meu orçamento</span>
+</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── KPI Cards (pós análise) ── -->
+<div id="kpi-section" style="display:none;margin-bottom:22px">
+  <div class="cards-grid">
+    <div class="stat-card">
+      <div class="stat-card-accent" style="background:var(--success)"></div>
+      <div class="stat-card-bg"><i class="fa-solid fa-sack-dollar"></i></div>
+      <div class="stat-icon-circle" style="background:#f0fdf4;color:var(--success)"><i class="fa-solid fa-sack-dollar"></i></div>
+      <div class="stat-label">Economia Adicional/mês</div>
+      <div id="kpi-economia" class="stat-value positive">R$ —</div>
+      <div class="stat-sub">Seguindo o plano otimizado</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-accent" style="background:var(--purple)"></div>
+      <div class="stat-card-bg"><i class="fa-solid fa-calendar-days"></i></div>
+      <div class="stat-icon-circle" style="background:#f5f3ff;color:var(--purple)"><i class="fa-solid fa-calendar-days"></i></div>
+      <div class="stat-label">Projeção 1 Ano</div>
+      <div id="kpi-1ano" class="stat-value text-purple">R$ —</div>
+      <div class="stat-sub">Economia acumulada</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-accent" style="background:var(--secondary)"></div>
+      <div class="stat-card-bg"><i class="fa-solid fa-rocket"></i></div>
+      <div class="stat-icon-circle" style="background:#eef2ff;color:var(--secondary)"><i class="fa-solid fa-rocket"></i></div>
+      <div class="stat-label">Projeção 5 Anos</div>
+      <div id="kpi-5anos" class="stat-value" style="color:var(--secondary)">R$ —</div>
+      <div class="stat-sub">Com juros compostos 10% a.a.</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-accent" style="background:var(--info)"></div>
+      <div class="stat-card-bg"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="stat-icon-circle" style="background:#f0f9ff;color:var(--info)"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="stat-label">Regra Aplicada</div>
+      <div id="kpi-regra" class="stat-value" style="font-size:14px;color:var(--info)">—</div>
+      <div class="stat-sub">Método de otimização</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Idle ── -->
+<div id="bo-idle">
+  <div style="background:white;border:1px solid var(--border);border-radius:16px;padding:56px 32px;text-align:center;box-shadow:var(--shadow-sm)">
+    <div style="font-size:52px;margin-bottom:16px;color:var(--primary)"><i class="fa-solid fa-sliders"></i></div>
+    <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">Orçamento otimizado pela IA</h2>
+    <p style="font-size:14px;color:var(--text-secondary);max-width:500px;margin:0 auto 28px;line-height:1.6">
+      A IA analisa sua renda, seus gastos fixos e variáveis e calcula quanto você deveria alocar em cada categoria — com valores exatos em R$ e metas de poupança realistas.
+    </p>
+    <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:32px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
+        <span style="width:30px;height:30px;border-radius:8px;background:#fef2f2;display:flex;align-items:center;justify-content:center;color:var(--danger)"><i class="fa-solid fa-house"></i></span> Moradia
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
+        <span style="width:30px;height:30px;border-radius:8px;background:#fffbeb;display:flex;align-items:center;justify-content:center;color:var(--warning)"><i class="fa-solid fa-gamepad"></i></span> Lazer
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
+        <span style="width:30px;height:30px;border-radius:8px;background:#f5f3ff;display:flex;align-items:center;justify-content:center;color:var(--purple)"><i class="fa-solid fa-chart-line"></i></span> Investimentos
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
+        <span style="width:30px;height:30px;border-radius:8px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;color:var(--success)"><i class="fa-solid fa-piggy-bank"></i></span> Poupança
+      </div>
+    </div>
+    <button onclick="runOptimizer()"
+      style="background:var(--primary);color:white;border:none;border-radius:10px;padding:13px 32px;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:0 4px 16px rgba(255,87,16,.3)"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(255,87,16,.4)'"
+      onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(255,87,16,.3)'">
+      <i class="fa-solid fa-sliders"></i> Gerar orçamento ideal agora
+    </button>
+  </div>
+</div>
+
+<!-- ── Loading ── -->
+<div id="bo-loading" style="display:none">
+  <div style="background:white;border:1px solid var(--border);border-radius:16px;padding:56px 32px;text-align:center;box-shadow:var(--shadow-sm)">
+    <div style="display:inline-block;width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px"></div>
+    <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">Calculando seu orçamento ideal...</h3>
+    <p style="font-size:13px;color:var(--text-muted)">A IA está aplicando a regra 50/30/20 à sua realidade financeira.</p>
+  </div>
+</div>
+
+<!-- ── Error ── -->
+<div id="bo-error" style="display:none">
+  <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:14px">
+    <span style="font-size:22px;color:var(--danger)"><i class="fa-solid fa-triangle-exclamation"></i></span>
+    <div>
+      <div style="font-size:14px;font-weight:600;color:var(--danger)">Erro na otimização</div>
+      <div id="bo-error-msg" style="font-size:13px;color:var(--danger);margin-top:3px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Results ── -->
+<div id="bo-results" style="display:none">
+
+  <!-- Resumo + Insight Principal -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+
+    <!-- Resumo -->
+    <div class="section-card" style="margin-bottom:0">
+      <div style="background:linear-gradient(135deg,#1a1760 0%,#2d2a8e 50%,#1a1760 100%);padding:18px 22px;display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:18px;color:white;flex-shrink:0">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:white">Diagnóstico do Orçamento</div>
+      </div>
+      <div style="padding:18px 22px">
+        <p id="bo-resumo" style="font-size:13.5px;line-height:1.65;color:var(--text);margin:0"></p>
+      </div>
+    </div>
+
+    <!-- Insight Principal -->
+    <div class="section-card" style="margin-bottom:0;border-left:4px solid var(--primary)">
+      <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-lightbulb" style="color:var(--primary);font-size:16px"></i>
+        <div style="font-size:14px;font-weight:700;color:var(--text)">Insight Principal</div>
+      </div>
+      <div style="padding:18px 22px">
+        <p id="bo-insight" style="font-size:13.5px;line-height:1.65;color:var(--text);margin:0"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categorias — comparativo atual vs ideal -->
+  <div class="section-card" style="margin-bottom:20px">
+    <div class="section-header">
+      <div class="section-header-text">
+        <h3><i class="fa-solid fa-chart-pie" style="color:var(--primary)"></i> Alocação por Categoria — Atual vs Ideal</h3>
+        <p>Cada barra mostra o quanto você gasta hoje e o quanto deveria gastar</p>
+      </div>
+      <div id="renda-badge" style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;color:var(--text-secondary)">
+        Renda: <strong id="renda-val">—</strong>
+      </div>
+    </div>
+    <div class="section-body" style="padding:16px 24px">
+      <div id="categorias-list" style="display:flex;flex-direction:column;gap:14px"></div>
+    </div>
+  </div>
+
+  <!-- Próximos Passos -->
+  <div class="section-card">
+    <div class="section-header" style="background:linear-gradient(90deg,#f0fdf4,white)">
+      <div class="section-header-text">
+        <h3><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> Próximos Passos — Implemente esta semana</h3>
+        <p>Ações prioritárias para colocar o plano em prática imediatamente</p>
+      </div>
+    </div>
+    <div class="section-body" style="padding:16px 24px">
+      <div id="passos-list" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+.text-purple { color: var(--purple); }
+</style>
+<script>
+const BO_CSRF = '{{ csrf_token }}';
+
+function fmtBRL(v) {
+  return 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function runOptimizer() {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  document.getElementById('run-icon').innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
+  document.getElementById('run-text').textContent = 'Calculando...';
+
+  document.getElementById('bo-idle').style.display    = 'none';
+  document.getElementById('bo-error').style.display   = 'none';
+  document.getElementById('bo-results').style.display = 'none';
+  document.getElementById('kpi-section').style.display= 'none';
+  document.getElementById('bo-loading').style.display = 'block';
+
+  fetch('/budget-optimizer/run/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': BO_CSRF },
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('bo-loading').style.display = 'none';
+    btn.disabled = false;
+    document.getElementById('run-icon').innerHTML = '<i class="fa-solid fa-rotate"></i>';
+    document.getElementById('run-text').textContent = 'Recalcular';
+
+    if (!data.success) {
+      document.getElementById('bo-error-msg').textContent = data.error;
+      document.getElementById('bo-error').style.display = 'flex';
+      return;
+    }
+    renderResults(data.analysis);
+  })
+  .catch(() => {
+    document.getElementById('bo-loading').style.display = 'none';
+    btn.disabled = false;
+    document.getElementById('run-icon').innerHTML = '<i class="fa-solid fa-sliders"></i>';
+    document.getElementById('run-text').textContent = 'Otimizar meu orçamento';
+    document.getElementById('bo-error-msg').textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
+    document.getElementById('bo-error').style.display = 'flex';
+  });
+}
+
+function renderResults(a) {
+  // KPIs
+  document.getElementById('kpi-economia').textContent = fmtBRL(a.economia_mensal_adicional);
+  document.getElementById('kpi-1ano').textContent     = fmtBRL(a.projecao_1_ano);
+  document.getElementById('kpi-5anos').textContent    = fmtBRL(a.projecao_5_anos);
+  document.getElementById('kpi-regra').textContent    = a.regra_utilizada || '50/30/20';
+  document.getElementById('kpi-section').style.display = 'block';
+
+  // Resumo e insight
+  document.getElementById('bo-resumo').textContent  = a.resumo || '';
+  document.getElementById('bo-insight').textContent = a.insight_principal || '';
+
+  // Badge renda
+  document.getElementById('renda-val').textContent = fmtBRL(a.renda_mensal);
+
+  // Categorias
+  const list = document.getElementById('categorias-list');
+  list.innerHTML = '';
+
+  const statusCfg = {
+    acima:  { badge: 'ACIMA DO IDEAL', badgeBg: '#fef2f2', badgeColor: '#dc2626', barColor: '#dc2626', icon: 'fa-arrow-up' },
+    abaixo: { badge: 'ABAIXO DO IDEAL', badgeBg: '#fffbeb', badgeColor: '#b45309', barColor: '#f59e0b', icon: 'fa-arrow-down' },
+    ideal:  { badge: 'NO IDEAL',        badgeBg: '#f0fdf4', badgeColor: '#16a34a', barColor: '#16a34a', icon: 'fa-check' },
+  };
+
+  (a.categorias || []).forEach(cat => {
+    const s = statusCfg[cat.status] || statusCfg.ideal;
+    const maxVal = Math.max(cat.valor_atual, cat.valor_ideal, 1);
+    const pctAtual = Math.min((cat.valor_atual / maxVal) * 100, 100);
+    const pctIdeal = Math.min((cat.valor_ideal / maxVal) * 100, 100);
+    const renda = a.renda_mensal || 1;
+    const pctRendaAtual = Math.min((cat.valor_atual / renda) * 100, 100);
+    const pctRendaIdeal = Math.min((cat.valor_ideal / renda) * 100, 100);
+
+    const difSign = cat.diferenca >= 0 ? '+' : '';
+    const difColor = cat.diferenca < 0 ? '#dc2626' : '#16a34a';
+
+    const el = document.createElement('div');
+    el.style.cssText = 'background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:16px 18px';
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:9px;background:${cat.cor}18;display:flex;align-items:center;justify-content:center;color:${cat.cor};font-size:16px;flex-shrink:0">
+            <i class="fa-solid ${cat.icone_fa}"></i>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--text)">${cat.categoria}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:1px">${cat.percentual_ideal}% da renda ideal</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;background:${s.badgeBg};color:${s.badgeColor}">
+            <i class="fa-solid ${s.icon}"></i> ${s.badge}
+          </span>
+          <span style="font-size:13px;font-weight:700;color:${difColor}">${difSign}${fmtBRL(cat.diferenca)}/mês</span>
+        </div>
+      </div>
+
+      <!-- Barras comparativas -->
+      <div style="display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:center;margin-bottom:8px">
+        <div style="font-size:11px;color:var(--text-muted);font-weight:600">ATUAL</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:8px;background:#E2E8F0;border-radius:999px;overflow:hidden">
+              <div style="height:100%;width:${pctAtual}%;background:#94a3b8;border-radius:999px;transition:width .8s ease"></div>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:var(--text);min-width:90px;text-align:right">${fmtBRL(cat.valor_atual)}</span>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--success);font-weight:600">IDEAL</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:8px;background:#E2E8F0;border-radius:999px;overflow:hidden">
+              <div style="height:100%;width:${pctIdeal}%;background:${s.barColor};border-radius:999px;transition:width .8s ease"></div>
+            </div>
+            <span style="font-size:12px;font-weight:700;color:${s.barColor};min-width:90px;text-align:right">${fmtBRL(cat.valor_ideal)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Justificativa e ação -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="font-size:12px;color:#374151;line-height:1.5">
+          <strong style="color:var(--text-secondary)">Por quê:</strong> ${cat.justificativa}
+        </div>
+        <div style="font-size:12px;color:#1d4ed8;background:#eff6ff;border-radius:6px;padding:8px 10px;line-height:1.5">
+          <strong><i class="fa-solid fa-bolt" style="color:var(--primary)"></i> Ação:</strong> ${cat.acao}
+        </div>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+
+  // Próximos passos
+  const passosList = document.getElementById('passos-list');
+  passosList.innerHTML = '';
+  (a.proximos_passos || []).forEach((passo, i) => {
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:flex-start;gap:14px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px 16px';
+    el.innerHTML = `
+      <div style="width:30px;height:30px;border-radius:8px;background:var(--success);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+      <p style="font-size:13.5px;color:#166534;line-height:1.55;margin:0;font-weight:500">${passo}</p>
+    `;
+    passosList.appendChild(el);
+  });
+
+  document.getElementById('bo-results').style.display = 'block';
+  document.getElementById('bo-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Confirmar Exclusão{% endblock %}
+{% block page_title %}Excluir item{% endblock %}
+{% block page_sub %}Esta ação é irreversível{% endblock %}
+
+{% block content %}
+<div style="max-width:480px">
+  <a href="{% url back_url %}" style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text-secondary);margin-bottom:20px;transition:color .18s" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-secondary)'">
+    ← Voltar
+  </a>
+
+  <div class="section-card">
+    <div class="section-body" style="padding:32px">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="width:64px;height:64px;border-radius:50%;background:#FEF2F2;border:2px solid #FECACA;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px">
+          🗑
+        </div>
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:8px">Confirmar exclusão</h2>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.6">
+          Você está prestes a excluir <strong style="color:var(--text)">{{ obj }}</strong>.<br>
+          Esta ação não poderá ser desfeita.
+        </p>
+      </div>
+
+      <div style="background:#FEF9F9;border:1px solid #FECACA;border-radius:10px;padding:14px 16px;display:flex;gap:10px;align-items:flex-start;margin-bottom:24px">
+        <span style="color:var(--danger);font-size:16px;flex-shrink:0">⚠</span>
+        <span style="font-size:13px;color:#B91C1C;line-height:1.5">Os dados serão removidos permanentemente e não será possível recuperá-los.</span>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <form method="post" style="flex:1">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center">
+            Sim, excluir permanentemente
+          </button>
+        </form>
+        <a href="{% url back_url %}" class="btn btn-outline" style="flex:1;justify-content:center">
+          Cancelar
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

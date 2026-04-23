@@ -1,0 +1,443 @@
+{% extends 'base.html' %}
+{% block title %}AI Investment Assistant{% endblock %}
+{% block page_title %}AI Investment Assistant{% endblock %}
+{% block page_sub %}Asset allocation, perfil de risco e quanto investir — personalizado para você{% endblock %}
+
+{% block header_right %}
+<div style="display:flex;align-items:center;gap:10px">
+  <div style="display:flex;align-items:center;gap:6px;background:linear-gradient(90deg,#7C3AED,#4f46e5);color:white;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">
+    <i class="fa-solid fa-star"></i> PREMIUM
+  </div>
+  <button id="run-btn" onclick="runAssistant()"
+    style="display:flex;align-items:center;gap:8px;background:var(--primary);color:white;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s"
+    onmouseover="this.style.background='var(--primary-dark)';this.style.transform='translateY(-1px)'"
+    onmouseout="this.style.background='var(--primary)';this.style.transform='none'">
+    <span id="run-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+    <span id="run-text">Analisar minha carteira</span>
+  </button>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── KPI Cards (pós análise) ── -->
+<div id="kpi-section" style="display:none;margin-bottom:22px">
+  <div class="cards-grid">
+    <div class="stat-card">
+      <div class="stat-card-accent" style="background:var(--purple)"></div>
+      <div class="stat-card-bg"><i class="fa-solid fa-vault"></i></div>
+      <div class="stat-icon-circle" style="background:#f5f3ff;color:var(--purple)"><i class="fa-solid fa-vault"></i></div>
+      <div class="stat-label">Patrimônio Investido</div>
+      <div id="kpi-patrimonio" class="stat-value text-purple">R$ —</div>
+      <div class="stat-sub">Total na carteira atual</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-accent" style="background:var(--success)"></div>
+      <div class="stat-card-bg"><i class="fa-solid fa-arrow-trend-up"></i></div>
+      <div class="stat-icon-circle" style="background:#f0fdf4;color:var(--success)"><i class="fa-solid fa-arrow-trend-up"></i></div>
+      <div class="stat-label">Aporte Ideal / mês</div>
+      <div id="kpi-aporte-ideal" class="stat-value positive">R$ —</div>
+      <div class="stat-sub">Atual: <span id="kpi-aporte-atual" style="font-weight:700">R$ —</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-accent" style="background:#1d4ed8"></div>
+      <div class="stat-card-bg"><i class="fa-solid fa-clock-rotate-left"></i></div>
+      <div class="stat-icon-circle" style="background:#eff6ff;color:#1d4ed8"><i class="fa-solid fa-clock-rotate-left"></i></div>
+      <div class="stat-label">Projeção 10 Anos</div>
+      <div id="kpi-10anos" class="stat-value" style="color:#1d4ed8">R$ —</div>
+      <div class="stat-sub">Com aportes ideais a 12% a.a.</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-accent" style="background:var(--secondary)"></div>
+      <div class="stat-card-bg"><i class="fa-solid fa-rocket"></i></div>
+      <div class="stat-icon-circle" style="background:#eef2ff;color:var(--secondary)"><i class="fa-solid fa-rocket"></i></div>
+      <div class="stat-label">Projeção 20 Anos</div>
+      <div id="kpi-20anos" class="stat-value" style="color:var(--secondary)">R$ —</div>
+      <div class="stat-sub">Com aportes ideais a 12% a.a.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Idle ── -->
+<div id="ia-idle">
+  <div style="background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm)">
+    <!-- Banner premium -->
+    <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 50%,#9333ea 100%);padding:32px;text-align:center">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;color:white;letter-spacing:.5px;margin-bottom:16px">
+        <i class="fa-solid fa-star"></i> FUNCIONALIDADE PREMIUM
+      </div>
+      <div style="font-size:40px;color:white;margin-bottom:12px"><i class="fa-solid fa-chart-pie"></i></div>
+      <h2 style="font-size:22px;font-weight:800;color:white;margin-bottom:8px;letter-spacing:-.3px">AI Investment Assistant</h2>
+      <p style="font-size:14px;color:rgba(255,255,255,.75);max-width:480px;margin:0 auto;line-height:1.6">
+        Análise profissional da sua carteira com asset allocation personalizado, perfil de risco e projeções de patrimônio para 10 e 20 anos.
+      </p>
+    </div>
+
+    <!-- Features grid -->
+    <div style="padding:28px 32px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px">
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--surface-2);border-radius:10px;border:1px solid var(--border)">
+          <div style="width:36px;height:36px;border-radius:9px;background:#f5f3ff;color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-scale-balanced"></i></div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">Perfil de Risco</div><div style="font-size:12px;color:var(--text-muted)">Conservador, Moderado, Arrojado ou Agressivo</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--surface-2);border-radius:10px;border:1px solid var(--border)">
+          <div style="width:36px;height:36px;border-radius:9px;background:#eff6ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-chart-pie"></i></div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">Asset Allocation</div><div style="font-size:12px;color:var(--text-muted)">Renda Fixa, Variável, FIIs, Cripto e mais</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--surface-2);border-radius:10px;border:1px solid var(--border)">
+          <div style="width:36px;height:36px;border-radius:9px;background:#f0fdf4;color:var(--success);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-sack-dollar"></i></div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">Quanto Investir</div><div style="font-size:12px;color:var(--text-muted)">Valor ideal de aporte baseado na sua renda</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--surface-2);border-radius:10px;border:1px solid var(--border)">
+          <div style="width:36px;height:36px;border-radius:9px;background:#fef9c3;color:#b45309;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fa-solid fa-rocket"></i></div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">Projeções</div><div style="font-size:12px;color:var(--text-muted)">Patrimônio em 10 e 20 anos com juros compostos</div></div>
+        </div>
+      </div>
+      <div style="text-align:center">
+        <button onclick="runAssistant()"
+          style="background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;border:none;border-radius:10px;padding:14px 36px;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:0 4px 16px rgba(124,58,237,.35)"
+          onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 22px rgba(124,58,237,.45)'"
+          onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(124,58,237,.35)'">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Analisar minha carteira agora
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Loading ── -->
+<div id="ia-loading" style="display:none">
+  <div style="background:white;border:1px solid var(--border);border-radius:16px;padding:56px 32px;text-align:center;box-shadow:var(--shadow-sm)">
+    <div style="display:inline-block;width:48px;height:48px;border:4px solid #e9d5ff;border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px"></div>
+    <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">Analisando sua carteira...</h3>
+    <p style="font-size:13px;color:var(--text-muted)">O assistente está avaliando perfil de risco, alocação e projeções de longo prazo.</p>
+  </div>
+</div>
+
+<!-- ── Error ── -->
+<div id="ia-error" style="display:none">
+  <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:14px">
+    <span style="font-size:22px;color:var(--danger)"><i class="fa-solid fa-triangle-exclamation"></i></span>
+    <div>
+      <div style="font-size:14px;font-weight:600;color:var(--danger)">Erro na análise</div>
+      <div id="ia-error-msg" style="font-size:13px;color:var(--danger);margin-top:3px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Results ── -->
+<div id="ia-results" style="display:none">
+
+  <!-- Row 1: Resumo + Perfil de Risco -->
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:20px">
+
+    <!-- Resumo -->
+    <div class="section-card" style="margin-bottom:0">
+      <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);padding:18px 22px;display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;color:white;flex-shrink:0"><i class="fa-solid fa-brain"></i></div>
+        <div style="font-size:14px;font-weight:700;color:white">Diagnóstico da Carteira</div>
+      </div>
+      <div style="padding:18px 22px">
+        <p id="ia-resumo" style="font-size:13.5px;line-height:1.65;color:var(--text);margin:0 0 14px"></p>
+        <!-- Alertas -->
+        <div id="ia-alertas-wrap" style="display:none;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+
+    <!-- Perfil de Risco -->
+    <div class="section-card" style="margin-bottom:0">
+      <div style="padding:18px 22px;border-bottom:1px solid var(--border)">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px"><i class="fa-solid fa-scale-balanced" style="color:var(--purple)"></i> Perfil de Risco</div>
+        <div style="font-size:12px;color:var(--text-muted)">Atual vs Recomendado</div>
+      </div>
+      <div style="padding:18px 22px">
+        <!-- Atual -->
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">ATUAL</div>
+            <div id="perfil-atual-badge" style="font-size:12px;font-weight:800;padding:3px 10px;border-radius:20px;background:#f1f5f9;color:var(--text)">—</div>
+          </div>
+          <div style="height:10px;background:#E2E8F0;border-radius:999px;overflow:hidden;margin-bottom:4px">
+            <div id="risco-bar-atual" style="height:100%;border-radius:999px;transition:width 1s ease;width:0%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted)"><span>Conservador</span><span>Agressivo</span></div>
+        </div>
+        <!-- Ideal -->
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">IDEAL</div>
+            <div id="perfil-ideal-badge" style="font-size:12px;font-weight:800;padding:3px 10px;border-radius:20px;background:#f0fdf4;color:var(--success)">—</div>
+          </div>
+          <div style="height:10px;background:#E2E8F0;border-radius:999px;overflow:hidden;margin-bottom:4px">
+            <div id="risco-bar-ideal" style="height:100%;border-radius:999px;transition:width 1s ease;width:0%;opacity:.6;background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.3) 3px,rgba(255,255,255,.3) 6px)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted)"><span>Conservador</span><span>Agressivo</span></div>
+        </div>
+        <p id="perfil-diagnostico" style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin:0;background:var(--surface-2);border-radius:8px;padding:8px 10px"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insight Premium -->
+  <div style="background:linear-gradient(135deg,#fdf4ff,#f5f3ff);border:2px solid #d8b4fe;border-radius:14px;padding:20px 24px;margin-bottom:20px;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-10px;right:-10px;font-size:80px;opacity:.04;color:var(--purple)"><i class="fa-solid fa-star"></i></div>
+    <div style="display:flex;align-items:flex-start;gap:14px">
+      <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:20px;color:white;flex-shrink:0"><i class="fa-solid fa-lightbulb"></i></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div style="font-size:14px;font-weight:800;color:#4f46e5">Insight Premium</div>
+          <span style="background:linear-gradient(90deg,#7c3aed,#4f46e5);color:white;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.3px"><i class="fa-solid fa-star"></i> EXCLUSIVO</span>
+        </div>
+        <p id="ia-insight-premium" style="font-size:14px;line-height:1.65;color:#3730a3;margin:0;font-weight:500"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Asset Allocation -->
+  <div class="section-card" style="margin-bottom:20px">
+    <div class="section-header">
+      <div class="section-header-text">
+        <h3><i class="fa-solid fa-chart-pie" style="color:var(--purple)"></i> Asset Allocation — Atual vs Ideal</h3>
+        <p>Distribuição da sua carteira por classe de ativo</p>
+      </div>
+    </div>
+    <div class="section-body" style="padding:16px 24px">
+      <div id="alocacao-list" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+  </div>
+
+  <!-- Sugestões -->
+  <div class="section-card" style="margin-bottom:20px">
+    <div class="section-header">
+      <div class="section-header-text">
+        <h3><i class="fa-solid fa-lightbulb" style="color:var(--warning)"></i> Sugestões de Ação</h3>
+        <p>O que fazer com sua carteira agora</p>
+      </div>
+    </div>
+    <div class="section-body" style="padding:16px 24px">
+      <div id="sugestoes-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px"></div>
+    </div>
+  </div>
+
+  <!-- Projeções -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-header-text">
+        <h3><i class="fa-solid fa-chart-line" style="color:var(--success)"></i> Projeção de Patrimônio</h3>
+        <p>Com aportes ideais e juros compostos</p>
+      </div>
+    </div>
+    <div class="section-body" style="padding:16px 24px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px" id="projecoes-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+.text-purple { color: var(--purple); }
+</style>
+<script>
+const IA_CSRF = '{{ csrf_token }}';
+
+function fmtBRL(v) {
+  return 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function runAssistant() {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  document.getElementById('run-icon').innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
+  document.getElementById('run-text').textContent = 'Analisando...';
+
+  document.getElementById('ia-idle').style.display    = 'none';
+  document.getElementById('ia-error').style.display   = 'none';
+  document.getElementById('ia-results').style.display = 'none';
+  document.getElementById('kpi-section').style.display= 'none';
+  document.getElementById('ia-loading').style.display = 'block';
+
+  fetch('/investment-assistant/run/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': IA_CSRF },
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('ia-loading').style.display = 'none';
+    btn.disabled = false;
+    document.getElementById('run-icon').innerHTML = '<i class="fa-solid fa-rotate"></i>';
+    document.getElementById('run-text').textContent = 'Reanalisar';
+
+    if (!data.success) {
+      document.getElementById('ia-error-msg').textContent = data.error;
+      document.getElementById('ia-error').style.display = 'flex';
+      return;
+    }
+    renderResults(data.analysis);
+  })
+  .catch(() => {
+    document.getElementById('ia-loading').style.display = 'none';
+    btn.disabled = false;
+    document.getElementById('run-icon').innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+    document.getElementById('run-text').textContent = 'Analisar minha carteira';
+    document.getElementById('ia-error-msg').textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
+    document.getElementById('ia-error').style.display = 'flex';
+  });
+}
+
+function renderResults(a) {
+  // KPIs
+  document.getElementById('kpi-patrimonio').textContent    = fmtBRL(a.valor_total_investido);
+  document.getElementById('kpi-aporte-ideal').textContent  = fmtBRL(a.aporte_mensal_ideal);
+  document.getElementById('kpi-aporte-atual').textContent  = fmtBRL(a.aporte_mensal_atual);
+  document.getElementById('kpi-10anos').textContent        = fmtBRL(a.projecao_10_anos);
+  document.getElementById('kpi-20anos').textContent        = fmtBRL(a.projecao_20_anos);
+  document.getElementById('kpi-section').style.display = 'block';
+
+  // Resumo
+  document.getElementById('ia-resumo').textContent = a.resumo || '';
+
+  // Alertas
+  const alertasWrap = document.getElementById('ia-alertas-wrap');
+  if (a.alertas && a.alertas.length) {
+    alertasWrap.style.display = 'flex';
+    alertasWrap.innerHTML = '';
+    a.alertas.forEach(al => {
+      const d = document.createElement('div');
+      d.style.cssText = 'display:flex;align-items:flex-start;gap:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;padding:8px 12px;font-size:12.5px;color:#991b1b';
+      d.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="flex-shrink:0;margin-top:2px"></i><span>${al}</span>`;
+      alertasWrap.appendChild(d);
+    });
+  }
+
+  // Perfil de risco
+  const pr = a.perfil_risco;
+  if (pr) {
+    document.getElementById('perfil-atual-badge').textContent  = pr.perfil_atual || '—';
+    document.getElementById('perfil-atual-badge').style.background = pr.cor_atual + '20';
+    document.getElementById('perfil-atual-badge').style.color = pr.cor_atual;
+    document.getElementById('perfil-ideal-badge').textContent  = pr.perfil_ideal || '—';
+    document.getElementById('perfil-ideal-badge').style.background = pr.cor_ideal + '20';
+    document.getElementById('perfil-ideal-badge').style.color = pr.cor_ideal;
+    setTimeout(() => {
+      document.getElementById('risco-bar-atual').style.width = (pr.score_atual || 0) + '%';
+      document.getElementById('risco-bar-atual').style.background = pr.cor_atual;
+      document.getElementById('risco-bar-ideal').style.width = (pr.score_ideal || 0) + '%';
+      document.getElementById('risco-bar-ideal').style.background = pr.cor_ideal;
+    }, 100);
+    document.getElementById('perfil-diagnostico').textContent = pr.diagnostico || '';
+  }
+
+  // Insight Premium
+  document.getElementById('ia-insight-premium').textContent = a.insight_premium || '';
+
+  // Asset Allocation
+  const aloList = document.getElementById('alocacao-list');
+  aloList.innerHTML = '';
+  const maxTotal = Math.max(...(a.alocacao || []).map(c => Math.max(c.percentual_atual, c.percentual_ideal)), 1);
+
+  (a.alocacao || []).forEach(c => {
+    const difSign = c.diferenca_pct >= 0 ? '+' : '';
+    const difColor = c.diferenca_pct > 2 ? '#16a34a' : c.diferenca_pct < -2 ? '#dc2626' : '#6b7280';
+    const widthAtual = Math.min((c.percentual_atual / maxTotal) * 100, 100);
+    const widthIdeal = Math.min((c.percentual_ideal / maxTotal) * 100, 100);
+    const el = document.createElement('div');
+    el.style.cssText = 'background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 18px';
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:34px;height:34px;border-radius:9px;background:${c.cor}18;color:${c.cor};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">
+            <i class="fa-solid ${c.icone_fa}"></i>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--text)">${c.classe}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+          <div style="text-align:right">
+            <div style="font-size:11px;color:var(--text-muted)">Atual / Ideal</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${c.percentual_atual}% <span style="color:var(--text-muted)">/ ${c.percentual_ideal}%</span></div>
+          </div>
+          <div style="font-size:13px;font-weight:800;color:${difColor};background:${difColor}18;padding:4px 10px;border-radius:6px">${difSign}${c.diferenca_pct.toFixed(1)}%</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:55px 1fr;gap:6px;align-items:center;margin-bottom:6px">
+        <div style="font-size:11px;color:var(--text-muted);font-weight:600">ATUAL</div>
+        <div style="height:8px;background:#E2E8F0;border-radius:999px;overflow:hidden">
+          <div style="height:100%;width:${widthAtual}%;background:#94a3b8;border-radius:999px;transition:width .8s ease"></div>
+        </div>
+        <div style="font-size:11px;color:${c.cor};font-weight:600">IDEAL</div>
+        <div style="height:8px;background:#E2E8F0;border-radius:999px;overflow:hidden">
+          <div style="height:100%;width:${widthIdeal}%;background:${c.cor};border-radius:999px;transition:width .8s ease"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text-secondary)">Atual: <strong>${fmtBRL(c.valor_atual)}</strong></div>
+        <div style="font-size:11px;color:${c.cor};font-weight:600">Ideal: <strong>${fmtBRL(c.valor_ideal)}</strong></div>
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);margin:8px 0 0;line-height:1.5">${c.justificativa}</p>
+    `;
+    aloList.appendChild(el);
+  });
+
+  // Sugestões
+  const tipoCfg = {
+    aumentar:    { bg: '#f0fdf4', border: '#86efac', badgeBg: '#16a34a', label: 'AUMENTAR' },
+    reduzir:     { bg: '#fef2f2', border: '#fca5a5', badgeBg: '#dc2626', label: 'REDUZIR' },
+    iniciar:     { bg: '#eff6ff', border: '#93c5fd', badgeBg: '#1d4ed8', label: 'INICIAR' },
+    manter:      { bg: '#f8fafc', border: '#e2e8f0', badgeBg: '#64748b', label: 'MANTER' },
+    rebalancear: { bg: '#fdf4ff', border: '#d8b4fe', badgeBg: '#7c3aed', label: 'REBALANCEAR' },
+  };
+  const sugGrid = document.getElementById('sugestoes-grid');
+  sugGrid.innerHTML = '';
+  (a.sugestoes || []).forEach(s => {
+    const cfg = tipoCfg[s.tipo] || tipoCfg.manter;
+    const el = document.createElement('div');
+    el.style.cssText = `background:${cfg.bg};border:1px solid ${cfg.border};border-radius:12px;padding:16px`;
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:36px;height:36px;border-radius:9px;background:${cfg.badgeBg};color:white;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">
+          <i class="fa-solid ${s.icone_fa}"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${s.titulo}</div>
+          <span style="font-size:10px;font-weight:800;background:${cfg.badgeBg};color:white;padding:2px 7px;border-radius:4px;letter-spacing:.4px">${cfg.label}</span>
+        </div>
+        <div style="font-size:15px;font-weight:800;color:${cfg.badgeBg};flex-shrink:0">${fmtBRL(s.valor_sugerido_mensal)}<span style="font-size:10px;font-weight:500;color:var(--text-muted)">/mês</span></div>
+      </div>
+      <p style="font-size:12.5px;color:#374151;line-height:1.55;margin:0 0 8px">${s.justificativa}</p>
+      <div style="font-size:12px;color:#1d4ed8;background:#eff6ff;border-radius:6px;padding:7px 10px">
+        <i class="fa-solid fa-chart-line" style="color:var(--success)"></i> <strong>Impacto:</strong> ${s.impacto_projetado}
+      </div>
+    `;
+    sugGrid.appendChild(el);
+  });
+
+  // Projeções
+  const projGrid = document.getElementById('projecoes-grid');
+  projGrid.innerHTML = '';
+  const projecoes = [
+    { label: '10 Anos (12% a.a.)', valor: a.projecao_10_anos, icon: 'fa-clock-rotate-left', cor: '#1d4ed8', bg: '#eff6ff' },
+    { label: '10 Anos Conservador (8% a.a.)', valor: a.projecao_conservadora_10, icon: 'fa-shield-halved', cor: '#64748b', bg: '#f8fafc' },
+    { label: '20 Anos (12% a.a.)', valor: a.projecao_20_anos, icon: 'fa-rocket', cor: '#7c3aed', bg: '#fdf4ff' },
+  ];
+  projecoes.forEach(p => {
+    const el = document.createElement('div');
+    el.style.cssText = `background:${p.bg};border:1px solid ${p.cor}30;border-radius:12px;padding:18px;text-align:center`;
+    el.innerHTML = `
+      <div style="width:42px;height:42px;border-radius:10px;background:${p.cor}15;color:${p.cor};display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 10px">
+        <i class="fa-solid ${p.icon}"></i>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${p.label}</div>
+      <div style="font-size:20px;font-weight:800;color:${p.cor};letter-spacing:-.5px">${fmtBRL(p.valor)}</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px">com aportes ideais</div>
+    `;
+    projGrid.appendChild(el);
+  });
+
+  document.getElementById('ia-results').style.display = 'block';
+  document.getElementById('ia-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+{% endblock %}

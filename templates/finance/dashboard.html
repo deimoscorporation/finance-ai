@@ -1,0 +1,618 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_sub %}Visão geral das suas finanças{% endblock %}
+
+{% block header_right %}
+<div class="header-chip"><i class="fa-solid fa-calendar-days"></i> {% now "d/m/Y" %}</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── KPI Cards ── -->
+<div class="cards-grid">
+  <div class="stat-card">
+    <div class="stat-card-accent" style="background:var(--success)"></div>
+    <div class="stat-card-bg"><i class="fa-solid fa-money-bill-wave"></i></div>
+    <div class="stat-icon-circle" style="background:#f0fdf4;color:var(--success)"><i class="fa-solid fa-money-bill-wave"></i></div>
+    <div class="stat-label">Total de Receitas</div>
+    <div class="stat-value positive">R$ {{ rec|floatformat:2 }}</div>
+    <div class="stat-sub">{{ request.user.receitas.count }} fonte(s) de renda</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-accent" style="background:var(--danger)"></div>
+    <div class="stat-card-bg"><i class="fa-solid fa-money-bills"></i></div>
+    <div class="stat-icon-circle" style="background:#fef2f2;color:var(--danger)"><i class="fa-solid fa-money-bills"></i></div>
+    <div class="stat-label">Total de Gastos</div>
+    <div class="stat-value negative">R$ {{ gas|floatformat:2 }}</div>
+    <div class="stat-sub">Fixos R$ {{ fix|floatformat:2 }} · Var. R$ {{ vari|floatformat:2 }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-accent" style="background:var(--warning)"></div>
+    <div class="stat-card-bg"><i class="fa-solid fa-piggy-bank"></i></div>
+    <div class="stat-icon-circle" style="background:#fffbeb;color:var(--warning)"><i class="fa-solid fa-piggy-bank"></i></div>
+    <div class="stat-label">Reservas (mensal)</div>
+    <div class="stat-value" style="color:var(--warning)">R$ {{ res|floatformat:2 }}</div>
+    <div class="stat-sub">{{ request.user.reservas.count }} reserva(s)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-accent" style="background:var(--purple)"></div>
+    <div class="stat-card-bg"><i class="fa-solid fa-chart-line"></i></div>
+    <div class="stat-icon-circle" style="background:#f5f3ff;color:var(--purple)"><i class="fa-solid fa-chart-line"></i></div>
+    <div class="stat-label">Investimentos (mensal)</div>
+    <div class="stat-value text-purple">R$ {{ inv|floatformat:2 }}</div>
+    <div class="stat-sub">{{ request.user.investimentos.count }} ativo(s)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-accent" style="background:{% if sal >= 0 %}var(--success){% else %}var(--danger){% endif %}"></div>
+    <div class="stat-card-bg"><i class="fa-solid fa-circle-check"></i></div>
+    <div class="stat-icon-circle" style="background:{% if sal >= 0 %}#f0fdf4{% else %}#fef2f2{% endif %};color:{% if sal >= 0 %}var(--success){% else %}var(--danger){% endif %}">{% if sal >= 0 %}<i class="fa-solid fa-circle-check"></i>{% else %}<i class="fa-solid fa-triangle-exclamation"></i>{% endif %}</div>
+    <div class="stat-label">Saldo Disponível</div>
+    <div class="stat-value {% if sal >= 0 %}positive{% else %}negative{% endif %}">R$ {{ sal|floatformat:2 }}</div>
+    <div class="stat-sub">Receitas − todos os gastos</div>
+  </div>
+</div>
+
+<!-- ── Charts + Checklist ── -->
+<div style="display:grid;grid-template-columns:1fr 1fr 360px;gap:16px;margin-bottom:20px">
+
+  <!-- Donut -->
+  <div class="chart-card">
+    <div class="chart-card-title">Distribuição dos Gastos</div>
+    <div class="chart-card-sub">Como seu dinheiro está alocado</div>
+    <div style="display:flex;justify-content:center;max-height:220px">
+      <canvas id="chartDonut"></canvas>
+    </div>
+  </div>
+
+  <!-- Bar -->
+  <div class="chart-card">
+    <div class="chart-card-title">Alocação por Categoria</div>
+    <div class="chart-card-sub">% do total de receitas</div>
+    <div style="max-height:220px">
+      <canvas id="chartBar"></canvas>
+    </div>
+  </div>
+
+  <!-- Checklist de Gastos Fixos — redesigned -->
+  <div style="background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;overflow:hidden;">
+
+    <!-- Header com gradiente -->
+    <div style="background:linear-gradient(135deg,#1a1760 0%,#2d2a8e 100%);padding:16px 18px 14px;display:flex;align-items:center;gap:14px;">
+      <!-- Anel de progresso SVG -->
+      <div style="position:relative;width:52px;height:52px;flex-shrink:0;">
+        <svg viewBox="0 0 52 52" style="width:52px;height:52px;transform:rotate(-90deg)">
+          <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="5"/>
+          <circle id="checklist-ring" cx="26" cy="26" r="21" fill="none"
+            stroke="#4ade80" stroke-width="5" stroke-linecap="round"
+            stroke-dasharray="131.9" stroke-dashoffset="131.9"
+            style="transition:stroke-dashoffset .6s ease,stroke .4s ease"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+          <span id="ring-pct" style="font-size:12px;font-weight:800;color:white;line-height:1;">
+            {% if fixos_total_count > 0 %}{% widthratio fixos_pago_count fixos_total_count 100 %}{% else %}0{% endif %}%
+          </span>
+        </div>
+      </div>
+      <!-- Título e contador -->
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13.5px;font-weight:700;color:white;margin-bottom:2px;">Gastos Fixos do Mês</div>
+        <div id="checklist-counter" style="font-size:11px;color:rgba(255,255,255,.55);">
+          {{ fixos_pago_count }} de {{ fixos_total_count }} pagos
+        </div>
+        <!-- Mini progress bar -->
+        <div style="height:3px;background:rgba(255,255,255,.12);border-radius:999px;margin-top:7px;overflow:hidden;">
+          <div id="checklist-progress-bar"
+            style="height:100%;border-radius:999px;transition:width .5s ease,background .4s ease;
+            background:{% if fixos_pago_count == fixos_total_count and fixos_total_count > 0 %}#4ade80{% else %}#fb923c{% endif %};
+            width:{% if fixos_total_count > 0 %}{% widthratio fixos_pago_count fixos_total_count 100 %}{% else %}0{% endif %}%;">
+          </div>
+        </div>
+      </div>
+      <a href="{% url 'gastos_fixos' %}"
+        style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.4px;white-space:nowrap;text-transform:uppercase;padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.12);transition:all .18s;"
+        onmouseover="this.style.background='rgba(255,255,255,.08)';this.style.color='white'"
+        onmouseout="this.style.background='transparent';this.style.color='rgba(255,255,255,.5)'">
+        Ver todos
+      </a>
+    </div>
+
+    <!-- Totais pago / pendente -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:10px 16px;display:flex;align-items:center;gap:8px;border-right:1px solid var(--border);">
+        <div style="width:28px;height:28px;border-radius:8px;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--success);flex-shrink:0;">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+          <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);">Pago</div>
+          <div id="total-pago" style="font-size:13px;font-weight:700;color:var(--success);">R$ {{ total_fixos_pago|floatformat:2 }}</div>
+        </div>
+      </div>
+      <div style="padding:10px 16px;display:flex;align-items:center;gap:8px;">
+        <div style="width:28px;height:28px;border-radius:8px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--danger);flex-shrink:0;">
+          <i class="fa-solid fa-clock"></i>
+        </div>
+        <div>
+          <div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);">Pendente</div>
+          <div id="total-pendente" style="font-size:13px;font-weight:700;color:var(--danger);">R$ {{ total_fixos_pendente|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de itens scrollável -->
+    <div style="flex:1;overflow-y:auto;max-height:260px;">
+      {% if gastos_fixos_list %}
+        {% for g in gastos_fixos_list %}
+        {% with cat=g.categoria %}
+        <div id="dash-row-{{ g.pk }}"
+          onclick="togglePagoDash({{ g.pk }}, this)"
+          style="display:flex;align-items:center;gap:11px;padding:10px 16px;cursor:pointer;transition:background .15s;border-bottom:1px solid #f8fafc;{% if g.pago %}background:#fafffe;{% endif %}"
+          onmouseover="this.style.background='var(--surface-2)'"
+          onmouseout="this.style.background='{% if g.pago %}#fafffe{% else %}transparent{% endif %}'">
+
+          <!-- Ícone categoria -->
+          <div style="width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .18s;
+            {% if cat == 'moradia' %}background:#fee2e2;color:#dc2626;
+            {% elif cat == 'transporte' %}background:#e0e7ff;color:#4338ca;
+            {% elif cat == 'saude' %}background:#dcfce7;color:#16a34a;
+            {% elif cat == 'educacao' %}background:#dbeafe;color:#1d4ed8;
+            {% elif cat == 'servicos' %}background:#f5f3ff;color:#7c3aed;
+            {% elif cat == 'seguros' %}background:#ecfdf5;color:#059669;
+            {% else %}background:#f1f5f9;color:#64748b;{% endif %}
+            {% if g.pago %}opacity:.45;{% endif %}">
+            {% if cat == 'moradia' %}<i class="fa-solid fa-house"></i>
+            {% elif cat == 'transporte' %}<i class="fa-solid fa-car"></i>
+            {% elif cat == 'saude' %}<i class="fa-solid fa-heart-pulse"></i>
+            {% elif cat == 'educacao' %}<i class="fa-solid fa-graduation-cap"></i>
+            {% elif cat == 'servicos' %}<i class="fa-solid fa-bolt"></i>
+            {% elif cat == 'seguros' %}<i class="fa-solid fa-shield-halved"></i>
+            {% else %}<i class="fa-solid fa-tag"></i>{% endif %}
+          </div>
+
+          <!-- Nome + categoria -->
+          <div style="flex:1;min-width:0;">
+            <div id="dash-nome-{{ g.pk }}"
+              style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .18s;
+              {% if g.pago %}text-decoration:line-through;color:var(--text-muted);{% else %}color:var(--text);{% endif %}">
+              {{ g.nome }}
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:1px;">{{ g.get_categoria_display }}</div>
+          </div>
+
+          <!-- Valor -->
+          <div id="dash-valor-{{ g.pk }}"
+            style="font-size:13px;font-weight:700;flex-shrink:0;transition:color .18s;
+            {% if g.pago %}color:var(--text-muted);{% else %}color:var(--danger);{% endif %}">
+            R$ {{ g.valor|floatformat:2 }}
+          </div>
+
+          <!-- Toggle check -->
+          <div id="dash-check-{{ g.pk }}"
+            style="width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all .2s;
+            {% if g.pago %}background:var(--success);border:2px solid var(--success);color:white;{% else %}background:white;border:2px solid var(--border);color:transparent;{% endif %}">
+            <i class="fa-solid fa-check"></i>
+          </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center;padding:32px 16px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--text-muted);margin:0 auto 12px;"><i class="fa-solid fa-house"></i></div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:6px;">Nenhum gasto fixo cadastrado</div>
+          <a href="{% url 'gastos_fixos' %}" style="font-size:12px;color:var(--primary);font-weight:600;">Cadastrar agora →</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Footer — tudo pago! (aparece quando 100%) -->
+    {% if fixos_pago_count == fixos_total_count and fixos_total_count > 0 %}
+    <div id="all-paid-banner" style="display:flex;align-items:center;gap:8px;padding:9px 16px;background:linear-gradient(90deg,#dcfce7,#f0fdf4);border-top:1px solid #bbf7d0;">
+      <i class="fa-solid fa-party-horn" style="color:var(--success);font-size:14px;"></i>
+      <span style="font-size:12px;font-weight:600;color:#15803d;">Todos os gastos fixos pagos este mês!</span>
+    </div>
+    {% else %}
+    <div id="all-paid-banner" style="display:none;align-items:center;gap:8px;padding:9px 16px;background:linear-gradient(90deg,#dcfce7,#f0fdf4);border-top:1px solid #bbf7d0;">
+      <i class="fa-solid fa-party-horn" style="color:var(--success);font-size:14px;"></i>
+      <span style="font-size:12px;font-weight:600;color:#15803d;">Todos os gastos fixos pagos este mês!</span>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- ── AI Financial Coach ── -->
+<div class="section-card" style="margin-bottom:20px;overflow:hidden">
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#1a1760 0%,#2d2a8e 50%,#1a1760 100%);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;color:white"><i class="fa-solid fa-robot"></i></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:white;letter-spacing:-.2px">AI Financial Coach</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:2px">Análise inteligente e personalizada das suas finanças</div>
+      </div>
+    </div>
+    <button id="ai-coach-btn" onclick="runAiCoach()"
+      style="display:flex;align-items:center;gap:8px;background:var(--primary);color:white;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0"
+      onmouseover="this.style.background='var(--primary-dark)';this.style.transform='translateY(-1px)'"
+      onmouseout="this.style.background='var(--primary)';this.style.transform='none'">
+      <span id="ai-btn-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+      <span id="ai-btn-text">Analisar minhas finanças</span>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div id="ai-coach-body" style="padding:20px 24px">
+
+    <!-- Idle state -->
+    <div id="ai-idle" style="text-align:center;padding:28px 16px;color:var(--text-muted)">
+      <div style="font-size:36px;margin-bottom:10px;color:var(--secondary)"><i class="fa-solid fa-brain"></i></div>
+      <div style="font-size:14px;font-weight:500;color:var(--text-secondary);margin-bottom:6px">Sua IA financeira pessoal está pronta</div>
+      <div style="font-size:12px">Clique em <strong>Analisar</strong> para receber insights personalizados sobre seus gastos, riscos e metas.</div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="ai-loading" style="display:none;text-align:center;padding:32px 16px">
+      <div style="display:inline-block;width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px"></div>
+      <div style="font-size:14px;font-weight:500;color:var(--text-secondary)">Analisando suas finanças...</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Isso pode levar alguns segundos</div>
+    </div>
+
+    <!-- Error state -->
+    <div id="ai-error" style="display:none;background:var(--danger-light);border:1px solid #fca5a5;border-radius:10px;padding:14px 18px;display:none;align-items:center;gap:12px">
+      <span style="font-size:20px;color:var(--danger)"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--danger)">Erro na análise</div>
+        <div id="ai-error-msg" style="font-size:12px;color:var(--danger);margin-top:2px"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="ai-results" style="display:none">
+
+      <!-- Score + Resumo -->
+      <div style="display:flex;align-items:flex-start;gap:20px;margin-bottom:20px;flex-wrap:wrap">
+        <!-- Score badge -->
+        <div id="ai-score-badge" style="flex-shrink:0;text-align:center;min-width:90px">
+          <div style="position:relative;width:80px;height:80px;margin:0 auto">
+            <svg viewBox="0 0 80 80" style="width:80px;height:80px;transform:rotate(-90deg)">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#E2E8F0" stroke-width="7"/>
+              <circle id="score-arc" cx="40" cy="40" r="34" fill="none" stroke="#16A34A" stroke-width="7"
+                stroke-dasharray="213.6" stroke-dashoffset="213.6" stroke-linecap="round"
+                style="transition:stroke-dashoffset 1s ease,stroke .5s ease"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column">
+              <div id="score-number" style="font-size:20px;font-weight:800;color:var(--text);line-height:1">—</div>
+            </div>
+          </div>
+          <div id="score-label" style="font-size:11px;font-weight:700;margin-top:6px;color:var(--text-secondary)">—</div>
+        </div>
+
+        <!-- Resumo -->
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Diagnóstico Geral</div>
+          <p id="ai-resumo" style="font-size:14px;line-height:1.6;color:var(--text)"></p>
+        </div>
+      </div>
+
+      <!-- Insights grid -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:10px">Insights Personalizados</div>
+        <div id="ai-insights-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px"></div>
+      </div>
+
+      <!-- Recomendações -->
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 18px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:10px"><i class="fa-solid fa-bullseye" style="color:var(--primary)"></i> Recomendações do Coach</div>
+        <ol id="ai-recomendacoes" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"></ol>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Allocation cards ── -->
+<div class="section-card">
+  <div class="section-header">
+    <div class="section-header-text">
+      <h3>Distribuição Financeira</h3>
+      <p>Onde cada real está sendo alocado</p>
+    </div>
+    <div style="font-size:13px;color:var(--text-secondary)">
+      Total receitas: <strong>R$ {{ rec|floatformat:2 }}</strong>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="alloc-grid">
+      {% for a in alloc %}
+      <div class="alloc-card" style="border-left:3px solid {{ a.color }}">
+        <div class="alloc-label">{{ a.label }}</div>
+        <div class="alloc-val" style="color:{{ a.color }}">R$ {{ a.valor|floatformat:2 }}</div>
+        <div class="alloc-pct">{{ a.pct }}% da renda</div>
+        <div style="height:4px;background:#E2E8F0;border-radius:999px;margin-top:8px;overflow:hidden">
+          <div style="height:100%;background:{{ a.color }};border-radius:999px;width:{% if a.pct > 100 %}100{% else %}{{ a.pct }}{% endif %}%;opacity:.7"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text-secondary)">
+      <span>Total receitas: <strong>R$ {{ rec|floatformat:2 }}</strong></span>
+      <span>Total gastos: <strong class="text-danger">R$ {{ gas|floatformat:2 }}</strong></span>
+      <span>Saldo: <strong class="{% if sal >= 0 %}text-success{% else %}text-danger{% endif %}">R$ {{ sal|floatformat:2 }}</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Quick links ── -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+  <a href="{% url 'receitas' %}" style="display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:all .18s;color:inherit" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,.07)';this.style.borderColor='var(--border-hover)'" onmouseout="this.style.boxShadow='none';this.style.borderColor='var(--border)'">
+    <span style="font-size:20px;color:var(--success)"><i class="fa-solid fa-money-bill-trend-up"></i></span>
+    <div><div style="font-size:13px;font-weight:600">Receitas</div><div style="font-size:11px;color:var(--text-muted)">{{ request.user.receitas.count }} cadastradas</div></div>
+  </a>
+  <a href="{% url 'gastos_fixos' %}" style="display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:all .18s;color:inherit" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,.07)';this.style.borderColor='var(--border-hover)'" onmouseout="this.style.boxShadow='none';this.style.borderColor='var(--border)'">
+    <span style="font-size:20px;color:var(--danger)"><i class="fa-solid fa-house"></i></span>
+    <div><div style="font-size:13px;font-weight:600">Gastos Fixos</div><div style="font-size:11px;color:var(--text-muted)">{{ request.user.gastos_fixos.count }} cadastrados</div></div>
+  </a>
+  <a href="{% url 'gastos_variaveis' %}" style="display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:all .18s;color:inherit" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,.07)';this.style.borderColor='var(--border-hover)'" onmouseout="this.style.boxShadow='none';this.style.borderColor='var(--border)'">
+    <span style="font-size:20px;color:var(--warning)"><i class="fa-solid fa-cart-shopping"></i></span>
+    <div><div style="font-size:13px;font-weight:600">Gastos Variáveis</div><div style="font-size:11px;color:var(--text-muted)">{{ request.user.gastos_variaveis.count }} lançamentos</div></div>
+  </a>
+  <a href="{% url 'reservas' %}" style="display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:all .18s;color:inherit" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,.07)';this.style.borderColor='var(--border-hover)'" onmouseout="this.style.boxShadow='none';this.style.borderColor='var(--border)'">
+    <span style="font-size:20px;color:var(--warning)"><i class="fa-solid fa-piggy-bank"></i></span>
+    <div><div style="font-size:13px;font-weight:600">Reservas</div><div style="font-size:11px;color:var(--text-muted)">{{ request.user.reservas.count }} cadastradas</div></div>
+  </a>
+  <a href="{% url 'investimentos' %}" style="display:flex;align-items:center;gap:12px;background:white;border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:all .18s;color:inherit" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,.07)';this.style.borderColor='var(--border-hover)'" onmouseout="this.style.boxShadow='none';this.style.borderColor='var(--border)'">
+    <span style="font-size:20px;color:var(--purple)"><i class="fa-solid fa-chart-line"></i></span>
+    <div><div style="font-size:13px;font-weight:600">Investimentos</div><div style="font-size:11px;color:var(--text-muted)">{{ request.user.investimentos.count }} ativos</div></div>
+  </a>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── Charts ──
+const donutData = {{ chart_donut|safe }};
+const barData   = {{ chart_bar|safe }};
+
+new Chart(document.getElementById('chartDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: donutData.labels,
+    datasets: [{ data: donutData.data, backgroundColor: donutData.colors, borderWidth: 3, borderColor: '#fff', hoverOffset: 6 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 11, family: 'Inter' }, padding: 12, usePointStyle: true } },
+      tooltip: { callbacks: { label: ctx => '  R$ ' + ctx.parsed.toLocaleString('pt-BR', {minimumFractionDigits:2}) } }
+    },
+    cutout: '65%'
+  }
+});
+
+new Chart(document.getElementById('chartBar'), {
+  type: 'bar',
+  data: {
+    labels: barData.labels,
+    datasets: [{ label: '% da Renda', data: barData.data, backgroundColor: barData.colors, borderRadius: 7, borderSkipped: false }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => '  ' + ctx.parsed.y + '% da renda' } }
+    },
+    scales: {
+      y: { beginAtZero: true, ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#F1F5F9' } },
+      x: { grid: { display: false }, ticks: { font: { size: 12 } } }
+    }
+  }
+});
+
+// ── Checklist toggle (dashboard) ──
+const CSRF = '{{ csrf_token }}';
+let pagoCount   = {{ fixos_pago_count }};
+let totalCount  = {{ fixos_total_count }};
+let pagoTotal   = {{ total_fixos_pago }};
+let pendTotal   = {{ total_fixos_pendente }};
+
+// Inicializa anel de progresso no page load
+(function initRing() {
+  const pct = totalCount > 0 ? Math.round((pagoCount / totalCount) * 100) : 0;
+  const ring = document.getElementById('checklist-ring');
+  if (!ring) return;
+  const circumference = 131.9;
+  const offset = circumference - (pct / 100) * circumference;
+  // Pequeno delay para a transição CSS ser visível
+  setTimeout(() => {
+    ring.style.strokeDashoffset = offset;
+    ring.style.stroke = pct === 100 ? '#4ade80' : pct >= 50 ? '#fb923c' : '#f87171';
+  }, 300);
+})();
+
+function fmtBRL(val) {
+  return 'R$ ' + val.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function togglePagoDash(pk, row) {
+  fetch(`/gastos-fixos/${pk}/toggle-pago/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF },
+  })
+  .then(r => r.json())
+  .then(data => {
+    const pago  = data.pago;
+    const check = document.getElementById(`dash-check-${pk}`);
+    const nome  = document.getElementById(`dash-nome-${pk}`);
+    const valor = document.getElementById(`dash-valor-${pk}`);
+    const rowEl = document.getElementById(`dash-row-${pk}`);
+
+    // ── Checkbox ──
+    check.style.background  = pago ? 'var(--success)' : 'white';
+    check.style.borderColor = pago ? 'var(--success)' : 'var(--border)';
+    check.style.color       = pago ? 'white' : 'transparent';
+
+    // ── Nome ──
+    nome.style.textDecoration = pago ? 'line-through' : 'none';
+    nome.style.color          = pago ? 'var(--text-muted)' : 'var(--text)';
+
+    // ── Valor ──
+    valor.style.color = pago ? 'var(--text-muted)' : 'var(--danger)';
+
+    // ── Row background ──
+    rowEl.style.background = pago ? '#fafffe' : 'transparent';
+    rowEl.onmouseout = function() { this.style.background = pago ? '#fafffe' : 'transparent'; };
+
+    // ── Ícone do item (opacidade) ──
+    const iconEl = rowEl.querySelector('[style*="border-radius:9px"]');
+    if (iconEl) iconEl.style.opacity = pago ? '.45' : '1';
+
+    // ── Stats globais ──
+    pagoCount = data.pago_count;
+    totalCount = data.total_count;
+    pagoTotal  = data.pago_total;
+    pendTotal  = data.pendente_total;
+
+    const pct = totalCount > 0 ? Math.round((pagoCount / totalCount) * 100) : 0;
+
+    // Counter text
+    document.getElementById('checklist-counter').textContent = `${pagoCount} de ${totalCount} pagos`;
+
+    // Totals
+    document.getElementById('total-pago').textContent     = fmtBRL(pagoTotal);
+    document.getElementById('total-pendente').textContent = fmtBRL(pendTotal);
+
+    // Mini progress bar
+    const bar = document.getElementById('checklist-progress-bar');
+    bar.style.width      = pct + '%';
+    bar.style.background = pct === 100 ? '#4ade80' : '#fb923c';
+
+    // SVG ring (stroke-dasharray = 131.9, offset = dasharray * (1 - pct/100))
+    const ring = document.getElementById('checklist-ring');
+    const circumference = 131.9;
+    const offset = circumference - (pct / 100) * circumference;
+    ring.style.strokeDashoffset = offset;
+    ring.style.stroke = pct === 100 ? '#4ade80' : pct >= 50 ? '#fb923c' : '#f87171';
+
+    // Percentage text inside ring
+    document.getElementById('ring-pct').textContent = pct + '%';
+
+    // ── Banner "tudo pago" ──
+    const banner = document.getElementById('all-paid-banner');
+    if (pct === 100) {
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  });
+}
+
+// ── AI Financial Coach ──
+const AI_CSRF = '{{ csrf_token }}';
+
+function runAiCoach() {
+  const btn = document.getElementById('ai-coach-btn');
+  const idle = document.getElementById('ai-idle');
+  const loading = document.getElementById('ai-loading');
+  const error = document.getElementById('ai-error');
+  const results = document.getElementById('ai-results');
+
+  // Switch to loading state
+  btn.disabled = true;
+  document.getElementById('ai-btn-icon').innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
+  document.getElementById('ai-btn-text').textContent = 'Analisando...';
+  idle.style.display = 'none';
+  error.style.display = 'none';
+  results.style.display = 'none';
+  loading.style.display = 'block';
+
+  fetch('/ai-coach/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': AI_CSRF, 'Content-Type': 'application/json' },
+  })
+  .then(r => r.json())
+  .then(data => {
+    loading.style.display = 'none';
+    btn.disabled = false;
+    document.getElementById('ai-btn-icon').innerHTML = '<i class="fa-solid fa-rotate"></i>';
+    document.getElementById('ai-btn-text').textContent = 'Atualizar análise';
+    btn.onmouseover = function() { this.style.background='var(--primary-dark)'; this.style.transform='translateY(-1px)'; };
+    btn.onmouseout  = function() { this.style.background='var(--primary)'; this.style.transform='none'; };
+
+    if (!data.success) {
+      document.getElementById('ai-error-msg').textContent = data.error;
+      error.style.display = 'flex';
+      return;
+    }
+
+    renderAiResults(data.analysis);
+  })
+  .catch(() => {
+    loading.style.display = 'none';
+    btn.disabled = false;
+    document.getElementById('ai-btn-icon').innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+    document.getElementById('ai-btn-text').textContent = 'Analisar minhas finanças';
+    document.getElementById('ai-error-msg').textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
+    error.style.display = 'flex';
+  });
+}
+
+function renderAiResults(a) {
+  // Score arc
+  const score = parseInt(a.score) || 0;
+  const circumference = 2 * Math.PI * 34; // 213.6
+  const offset = circumference - (score / 100) * circumference;
+  const arc = document.getElementById('score-arc');
+  arc.style.strokeDashoffset = offset;
+  arc.style.stroke = a.score_color || '#16A34A';
+  document.getElementById('score-number').textContent = score;
+  document.getElementById('score-number').style.color = a.score_color || '#16A34A';
+  document.getElementById('score-label').textContent = a.score_label || '';
+
+  // Resumo
+  document.getElementById('ai-resumo').textContent = a.resumo || '';
+
+  // Insights
+  const insightColors = {
+    positivo: { bg: '#f0fdf4', border: '#86efac', icon_bg: '#dcfce7', text: '#15803d' },
+    aviso:    { bg: '#fffbeb', border: '#fcd34d', icon_bg: '#fef3c7', text: '#b45309' },
+    critico:  { bg: '#fef2f2', border: '#fca5a5', icon_bg: '#fee2e2', text: '#dc2626' },
+  };
+  const grid = document.getElementById('ai-insights-grid');
+  grid.innerHTML = '';
+  (a.insights || []).forEach(ins => {
+    const c = insightColors[ins.tipo] || insightColors.aviso;
+    const card = document.createElement('div');
+    card.style.cssText = `background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:14px 16px`;
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:8px;background:${c.icon_bg};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${ins.icone}</div>
+        <div style="font-size:13px;font-weight:600;color:${c.text}">${ins.titulo}</div>
+      </div>
+      <p style="font-size:12.5px;line-height:1.55;color:#374151;margin:0">${ins.mensagem}</p>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Recomendações
+  const ol = document.getElementById('ai-recomendacoes');
+  ol.innerHTML = '';
+  (a.recomendacoes || []).forEach((rec, i) => {
+    const li = document.createElement('li');
+    li.style.cssText = 'display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text)';
+    li.innerHTML = `
+      <div style="width:22px;height:22px;border-radius:6px;background:var(--primary);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+      <span style="line-height:1.55">${rec}</span>
+    `;
+    ol.appendChild(li);
+  });
+
+  document.getElementById('ai-results').style.display = 'block';
+}
+</script>
+{% endblock %}

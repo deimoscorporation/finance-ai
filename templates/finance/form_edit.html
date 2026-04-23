@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_sub %}Atualize os dados abaixo{% endblock %}
+
+{% block content %}
+<div style="max-width:620px">
+  <!-- Breadcrumb back -->
+  <a href="{% url back_url %}" style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text-secondary);margin-bottom:20px;transition:color .18s" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-secondary)'">
+    ← Voltar
+  </a>
+
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-header-text">
+        <h3>{{ title }}</h3>
+        <p>Edite as informações e salve as alterações</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-row">
+          {% for field in form %}
+          <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for e in field.errors %}<span class="form-error">⚠ {{ e }}</span>{% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+        <div class="form-actions" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+          <button type="submit" class="btn btn-success">✓ Salvar alterações</button>
+          <a href="{% url back_url %}" class="btn btn-outline">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
