@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ── Build: instala dependências em um virtualenv isolado ─────────────────────
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 ENV PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt
 
 
 # ── Runtime ──────────────────────────────────────────────────────────────────
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 LABEL org.opencontainers.image.title="FinancePro" \
       org.opencontainers.image.description="Finanças pessoais com assistentes de IA (Django + LangChain + OpenAI)" \
