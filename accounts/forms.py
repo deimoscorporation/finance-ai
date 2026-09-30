@@ -76,6 +76,23 @@ class ProfileForm(forms.ModelForm):
         }
 
 
+class OpenAIKeyForm(forms.Form):
+    openai_api_key = forms.CharField(
+        label='Chave da API OpenAI',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'sk-...',
+            'autocomplete': 'off',
+        })
+    )
+
+    def clean_openai_api_key(self):
+        key = self.cleaned_data['openai_api_key'].strip()
+        if not key.startswith('sk-') or len(key) < 20:
+            raise forms.ValidationError('Chave inválida. As chaves da OpenAI começam com "sk-".')
+        return key
+
+
 class ChangePasswordForm(forms.Form):
     current_password = forms.CharField(
         label='Senha atual',

@@ -1,0 +1,22 @@
+{# Ícone + tom por categoria/tipo. Uso: {% include 'finance/_categoria_icon.html' with cat=obj.categoria %} #}
+{% if cat == 'moradia' %}<span class="ichip sm tone-danger"><i class="fa-solid fa-house"></i></span>
+{% elif cat == 'transporte' %}<span class="ichip sm tone-info"><i class="fa-solid fa-car"></i></span>
+{% elif cat == 'saude' %}<span class="ichip sm tone-success"><i class="fa-solid fa-heart-pulse"></i></span>
+{% elif cat == 'educacao' %}<span class="ichip sm tone-primary"><i class="fa-solid fa-graduation-cap"></i></span>
+{% elif cat == 'servicos' %}<span class="ichip sm tone-purple"><i class="fa-solid fa-bolt"></i></span>
+{% elif cat == 'seguros' %}<span class="ichip sm tone-success"><i class="fa-solid fa-shield-halved"></i></span>
+{% elif cat == 'alimentacao' %}<span class="ichip sm tone-warning"><i class="fa-solid fa-utensils"></i></span>
+{% elif cat == 'lazer' %}<span class="ichip sm tone-purple"><i class="fa-solid fa-film"></i></span>
+{% elif cat == 'vestuario' %}<span class="ichip sm tone-info"><i class="fa-solid fa-shirt"></i></span>
+{% elif cat == 'eletronicos' %}<span class="ichip sm tone-primary"><i class="fa-solid fa-laptop"></i></span>
+{% elif cat == 'higiene' %}<span class="ichip sm tone-success"><i class="fa-solid fa-pump-soap"></i></span>
+{% elif cat == 'presentes' %}<span class="ichip sm tone-danger"><i class="fa-solid fa-gift"></i></span>
+{% elif cat == 'salary' %}<span class="ichip sm tone-success"><i class="fa-solid fa-briefcase"></i></span>
+{% elif cat == 'vr' %}<span class="ichip sm tone-info"><i class="fa-solid fa-utensils"></i></span>
+{% elif cat == 'bonus' %}<span class="ichip sm tone-warning"><i class="fa-solid fa-gift"></i></span>
+{% elif cat == 'renda_fixa' %}<span class="ichip sm tone-info"><i class="fa-solid fa-landmark"></i></span>
+{% elif cat == 'renda_variavel' %}<span class="ichip sm tone-purple"><i class="fa-solid fa-chart-line"></i></span>
+{% elif cat == 'fii' %}<span class="ichip sm tone-warning"><i class="fa-solid fa-building"></i></span>
+{% elif cat == 'cripto' %}<span class="ichip sm tone-warning"><i class="fa-brands fa-bitcoin"></i></span>
+{% elif cat == 'previdencia' %}<span class="ichip sm tone-success"><i class="fa-solid fa-umbrella"></i></span>
+{% else %}<span class="ichip sm tone-neutral"><i class="fa-solid fa-tag"></i></span>{% endif %}

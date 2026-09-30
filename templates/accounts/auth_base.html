@@ -1,0 +1,108 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>{% block title %}{% endblock %} · FinancePro</title>
+  <meta name="theme-color" content="#0A0C11">
+  <link rel="icon" href="{% static 'brand/favicon.ico' %}" sizes="any">
+  <link rel="icon" type="image/png" href="{% static 'brand/favicon.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'brand/apple-touch-icon.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <style>
+    .auth { display: grid; grid-template-columns: minmax(420px, 46%) 1fr; min-height: 100vh; }
+
+    .auth-brand { border-radius: 0; border: none; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; padding: 40px 48px; }
+    .auth-brand::after { background: linear-gradient(180deg, rgba(8,10,15,.35) 0%, rgba(8,10,15,.7) 50%, rgba(8,10,15,.97) 100%); }
+    .auth-logo { display: flex; align-items: center; gap: 12px; }
+    .auth-logo .sidebar-brand-mark { width: 44px; height: 44px; }
+    .auth-logo .sidebar-brand-mark img { width: 24px; }
+    .auth-hero { max-width: 460px; }
+    .auth-hero h1 { font-size: 36px; font-weight: 800; letter-spacing: -.04em; line-height: 1.12; margin: 12px 0 14px; }
+    .auth-hero h1 span { color: var(--brand-accent); }
+    .auth-hero > p { font-size: 15px; color: var(--brand-muted); line-height: 1.7; }
+    .auth-points { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
+    .auth-point { display: flex; gap: 14px; align-items: flex-start; }
+    .auth-point strong { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 1px; }
+    .auth-point span { font-size: 12.5px; color: var(--brand-muted); line-height: 1.5; }
+    .auth-credit { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.08); }
+    .auth-credit-by { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--brand-muted); }
+    .auth-credit-by img { height: 18px; width: auto; opacity: .85; }
+    .auth-credit-tag { font-family: var(--font-mono); font-size: 11px; color: #6F7890; letter-spacing: .04em; }
+
+    .auth-main { position: relative; display: flex; align-items: center; justify-content: center; padding: 48px 28px; }
+    .auth-box { width: 100%; max-width: {% block box_width %}420px{% endblock %}; }
+    .auth-mobile-logo { display: none; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .auth-mobile-logo .sidebar-brand-mark img { width: 22px; }
+    .auth-mobile-logo .name { font-size: 17px; font-weight: 700; letter-spacing: -.02em; }
+    .auth-mobile-logo .name span { color: var(--primary); }
+    .auth-head { margin-bottom: 28px; }
+    .auth-head h2 { font-size: 27px; font-weight: 800; letter-spacing: -.035em; margin: 10px 0 6px; }
+    .auth-head p { font-size: 14px; color: var(--text-secondary); line-height: 1.55; }
+    .auth-form .form-group { margin-bottom: 16px; }
+    .auth-form .form-input { height: 46px; }
+    .auth-foot { text-align: center; font-size: 13.5px; color: var(--text-secondary); margin-top: 26px; }
+
+    @media (max-width: 960px) {
+      .auth { grid-template-columns: 1fr; }
+      .auth-brand { display: none; }
+      .auth-mobile-logo { display: flex; }
+    }
+  </style>
+</head>
+<body>
+<div class="auth">
+
+  <aside class="brand-panel auth-brand">
+    <div class="auth-logo">
+      <div class="sidebar-brand-mark"><img src="{% static 'brand/deimos-mark-light.png' %}" alt=""></div>
+      <div>
+        <div class="sidebar-brand-name" style="font-size:18px">Finance<span>Pro</span></div>
+        <div class="sidebar-brand-by">by Deimos Corp</div>
+      </div>
+    </div>
+
+    <div class="auth-hero">
+      <span class="eyebrow">Finanças pessoais + IA</span>
+      <h1>Seu dinheiro, com a <span>inteligência</span> que faltava.</h1>
+      <p>Controle receitas, gastos, reservas e investimentos, e deixe cinco assistentes de IA transformarem seus números em decisões.</p>
+      <div class="auth-points">
+        <div class="auth-point tone-info"><span class="ichip sm" style="background:rgba(143,160,255,.12);color:var(--brand-accent)"><i class="fa-solid fa-chart-pie"></i></span>
+          <div><strong>Panorama completo</strong><span>Dashboard com distribuição da renda e contas do mês.</span></div></div>
+        <div class="auth-point"><span class="ichip sm" style="background:rgba(143,160,255,.12);color:var(--brand-accent)"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          <div><strong>5 assistentes de IA</strong><span>Coach, auditoria de gastos, orçamento, investimentos e simulador.</span></div></div>
+        <div class="auth-point"><span class="ichip sm" style="background:rgba(143,160,255,.12);color:var(--brand-accent)"><i class="fa-solid fa-lock"></i></span>
+          <div><strong>Seus dados, sua chave</strong><span>Open source, com sua própria chave OpenAI criptografada.</span></div></div>
+      </div>
+    </div>
+
+    <div class="auth-credit">
+      <div class="auth-credit-by">Desenvolvido por <img src="{% static 'brand/deimos-wordmark-light.png' %}" alt="Deimos Corp"></div>
+      <div class="auth-credit-tag">Advanced AI &amp; CyberSecurity</div>
+    </div>
+  </aside>
+
+  <main class="auth-main">
+
+    <div class="auth-box">
+      <div class="auth-mobile-logo">
+        <div class="sidebar-brand-mark"><img src="{% static 'brand/deimos-mark-light.png' %}" alt=""></div>
+        <div>
+          <div class="name">Finance<span>Pro</span></div>
+          <div class="eyebrow" style="font-size:9.5px">by Deimos Corp</div>
+        </div>
+      </div>
+
+      {% block form %}{% endblock %}
+    </div>
+  </main>
+
+</div>
+<script src="{% static 'js/app.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

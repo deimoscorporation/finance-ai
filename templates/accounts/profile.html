@@ -1,53 +1,50 @@
 {% extends 'base.html' %}
-{% block title %}Meu Perfil{% endblock %}
-{% block page_title %}Meu Perfil{% endblock %}
-{% block page_sub %}Gerencie suas informações pessoais e segurança{% endblock %}
+{% block title %}Meu perfil{% endblock %}
+{% block page_title %}Meu perfil{% endblock %}
+{% block page_sub %}Dados pessoais, segurança e integração com IA{% endblock %}
 
 {% block content %}
 
-<!-- Profile header card -->
-<div class="section-card" style="margin-bottom:24px">
-  <div style="padding:28px 28px 0;display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap">
-    <div id="avatarWrap" style="width:88px;height:88px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--primary),#ff8a5c);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:4px solid white;box-shadow:0 4px 16px rgba(255,87,16,.25)">
-      {% if user.photo %}
-        <img id="avatarImg" src="{{ user.photo.url }}" alt="" style="width:100%;height:100%;object-fit:cover">
+<!-- Cabeçalho do perfil -->
+<section class="card mb-20">
+  <div class="brand-panel" style="border-radius:0;border:none;height:120px"></div>
+  <div class="row-between" style="position:relative;z-index:1;padding:0 24px 20px;margin-top:-44px;align-items:flex-end">
+    <div class="row" style="gap:18px;align-items:flex-end">
+      <div class="avatar xl" id="avatarWrap">
+        {% if user.photo %}<img src="{{ user.photo.url }}" alt="">{% else %}{{ user.first_name|first|upper }}{% endif %}
+      </div>
+      <div style="padding-bottom:6px">
+        <div style="font-size:20px;font-weight:700;letter-spacing:-.02em">{{ user.get_full_name }}</div>
+        <div class="text-secondary" style="font-size:13px">{{ user.email }}</div>
+      </div>
+    </div>
+    <div class="row" style="padding-bottom:6px;flex-wrap:wrap">
+      <span class="badge"><i class="fa-regular fa-calendar"></i> Membro desde {{ user.date_joined|date:"M Y" }}</span>
+      {% if user.has_openai_key %}
+        <span class="badge tone-success"><i class="fa-solid fa-circle-check"></i> IA ativa</span>
       {% else %}
-        <span style="font-size:32px;font-weight:800;color:white">{{ user.first_name|first|upper }}</span>
+        <span class="badge tone-warning"><i class="fa-solid fa-key"></i> IA desativada</span>
       {% endif %}
     </div>
-    <div style="padding-bottom:4px;flex:1;min-width:200px">
-      <div style="font-size:20px;font-weight:700;letter-spacing:-.3px">{{ user.get_full_name }}</div>
-      <div style="font-size:13px;color:var(--text-secondary);margin-top:3px">{{ user.email }}</div>
-      <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap">
-        <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:5px">
-          📅 Membro desde {{ user.date_joined|date:"d \d\e F \d\e Y" }}
-        </span>
-      </div>
-    </div>
   </div>
-  <!-- tab nav -->
-  <div style="display:flex;gap:0;padding:0 28px;margin-top:20px;border-top:1px solid var(--border)">
-    <button onclick="showTab('tab-profile',this)" id="btn-tab-profile"
-      style="padding:14px 20px;font-size:13px;font-weight:600;background:none;border:none;border-bottom:2px solid var(--primary);color:var(--primary);cursor:pointer;font-family:inherit;transition:all .18s">
-      👤 Dados pessoais
-    </button>
-    <button onclick="showTab('tab-password',this)" id="btn-tab-password"
-      style="padding:14px 20px;font-size:13px;font-weight:500;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-secondary);cursor:pointer;font-family:inherit;transition:all .18s">
-      🔑 Segurança
-    </button>
-  </div>
+</section>
+
+<div class="tabs mb-20" data-tabs="profile">
+  <button class="tab {% if active_tab != 'password' and active_tab != 'openai' %}active{% endif %}" data-tab="tab-profile"><i class="fa-regular fa-user"></i> Dados pessoais</button>
+  <button class="tab {% if active_tab == 'password' %}active{% endif %}" data-tab="tab-password"><i class="fa-solid fa-shield-halved"></i> Segurança</button>
+  <button class="tab {% if active_tab == 'openai' %}active{% endif %}" data-tab="tab-openai"><i class="fa-solid fa-key"></i> Chave OpenAI {% if not user.has_openai_key %}<span class="dot"></span>{% endif %}</button>
 </div>
 
-<!-- Tab: Dados pessoais -->
-<div id="tab-profile">
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-header-text">
-        <h3>Informações pessoais</h3>
-        <p>Atualize seu nome, e-mail e foto de perfil</p>
+<!-- Dados pessoais -->
+<div id="tab-profile" data-tab-group="profile" class="tab-panel {% if active_tab != 'password' and active_tab != 'openai' %}active{% endif %}">
+  <div class="card" style="max-width:820px">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Informações pessoais</div>
+        <div class="card-sub">Atualize seu nome, e-mail e foto de perfil</div>
       </div>
     </div>
-    <div class="section-body">
+    <div class="card-body">
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="hidden" name="action" value="profile">
@@ -65,72 +62,135 @@
           </div>
         </div>
 
-        <div class="form-group" style="max-width:420px">
+        <div class="form-group mb-16">
           <label for="{{ profile_form.email.id_for_label }}">E-mail</label>
-          {{ profile_form.email }}
+          <div class="input-icon"><i class="fa-regular fa-envelope"></i>{{ profile_form.email }}</div>
           {% for e in profile_form.email.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
         </div>
 
         <div class="form-group">
           <label>Foto de perfil</label>
-          <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
-            <div id="previewWrap" style="width:64px;height:64px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--primary),#ff8a5c);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:3px solid var(--border)">
-              {% if user.photo %}
-                <img id="previewImg" src="{{ user.photo.url }}" style="width:100%;height:100%;object-fit:cover">
-              {% else %}
-                <span style="font-size:22px;font-weight:700;color:white">{{ user.first_name|first|upper }}</span>
-              {% endif %}
-            </div>
-            <label style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border:1.5px dashed var(--border);border-radius:9px;font-size:13px;color:var(--text-secondary);transition:all .18s;font-weight:500" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)';this.style.background='#fff5f0'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)';this.style.background='transparent'">
-              📷 Alterar foto
-              <input type="file" name="photo" accept="image/*" style="display:none" onchange="previewPhoto(this)">
-            </label>
-            <span id="photoFileName" style="font-size:12px;color:var(--text-muted)">
-              {% if user.photo %}Foto atual carregada{% else %}Nenhuma foto{% endif %}
+          <label class="row" style="gap:14px;padding:12px;border:1px dashed var(--border-strong);border-radius:12px;cursor:pointer;background:var(--surface-2);max-width:420px">
+            <span class="avatar" id="previewWrap">
+              {% if user.photo %}<img src="{{ user.photo.url }}" alt="">{% else %}{{ user.first_name|first|upper }}{% endif %}
             </span>
-          </div>
+            <span style="flex:1;min-width:0">
+              <span class="fw-600" style="font-size:13px;display:block">Alterar foto</span>
+              <span id="photoFileName" class="form-hint" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                {% if user.photo %}Foto atual carregada{% else %}Nenhuma foto{% endif %}
+              </span>
+            </span>
+            <input type="file" name="photo" accept="image/*" hidden onchange="previewPhoto(this)">
+          </label>
         </div>
 
-        <div class="form-actions" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
-          <button type="submit" class="btn btn-success">✓ Salvar alterações</button>
+        <div class="form-actions sep">
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Salvar alterações</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Tab: Segurança -->
-<div id="tab-password" style="display:none">
-  <div class="section-card">
-    <div class="section-header">
-      <div class="section-header-text">
-        <h3>Alterar senha</h3>
-        <p>Defina uma nova senha segura para sua conta</p>
+<!-- Segurança -->
+<div id="tab-password" data-tab-group="profile" class="tab-panel {% if active_tab == 'password' %}active{% endif %}">
+  <div class="grid" style="grid-template-columns:minmax(0,1fr) 340px;max-width:980px" id="pw-grid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Alterar senha</div>
+          <div class="card-sub">Defina uma nova senha segura para sua conta</div>
+        </div>
       </div>
-    </div>
-    <div class="section-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
-        <form method="post" style="max-width:400px">
+      <div class="card-body">
+        <form method="post">
           {% csrf_token %}
           <input type="hidden" name="action" value="password">
           {% for field in password_form %}
-          <div class="form-group">
+          <div class="form-group mb-16">
             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
             {% for e in field.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
           </div>
           {% endfor %}
-          <div class="form-actions" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
-            <button type="submit" class="btn btn-primary">🔑 Alterar senha</button>
+          <div class="form-actions sep">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-lock"></i> Alterar senha</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header tone-success"><div class="card-title"><i class="fa-solid fa-shield-halved"></i> Boas práticas</div></div>
+      <div class="card-body stack" style="font-size:13px;color:var(--text-secondary)">
+        <div class="row" style="align-items:flex-start"><i class="fa-solid fa-check text-success" style="margin-top:3px"></i><span>Use pelo menos 12 caracteres, misturando letras, números e símbolos.</span></div>
+        <div class="row" style="align-items:flex-start"><i class="fa-solid fa-check text-success" style="margin-top:3px"></i><span>Não reutilize a senha de outros serviços.</span></div>
+        <div class="row" style="align-items:flex-start"><i class="fa-solid fa-check text-success" style="margin-top:3px"></i><span>Prefira um gerenciador de senhas para gerar e guardar senhas fortes.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chave OpenAI -->
+<div id="tab-openai" data-tab-group="profile" class="tab-panel {% if active_tab == 'openai' %}active{% endif %}">
+  <div class="grid" style="grid-template-columns:minmax(0,1fr) 360px;max-width:1020px" id="ai-grid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Chave da API OpenAI</div>
+          <div class="card-sub">Necessária para usar os recursos de inteligência artificial</div>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if user.has_openai_key %}
+        <div class="callout tone-success mb-20">
+          <i class="fa-solid fa-circle-check"></i>
+          <div><div class="callout-title">Chave configurada</div><p><code>{{ user.openai_api_key_masked }}</code> · os recursos de IA estão ativos.</p></div>
+        </div>
+        {% else %}
+        <div class="callout tone-warning mb-20">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <div><div class="callout-title">Nenhuma chave configurada</div><p>Os recursos de IA estão desativados até você cadastrar sua chave.</p></div>
+        </div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="openai_key">
+          <div class="form-group">
+            <label for="{{ openai_form.openai_api_key.id_for_label }}">
+              {% if user.has_openai_key %}Substituir chave{% else %}{{ openai_form.openai_api_key.label }}{% endif %}
+            </label>
+            <div class="input-icon"><i class="fa-solid fa-key"></i>{{ openai_form.openai_api_key }}</div>
+            {% for e in openai_form.openai_api_key.errors %}<span class="form-error"><i class="fa-solid fa-circle-exclamation"></i> {{ e }}</span>{% endfor %}
+          </div>
+          <div class="form-actions sep">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Salvar chave</button>
           </div>
         </form>
 
-        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:20px">
-          <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px">Dicas de segurança</div>
-          <div style="display:flex;flex-direction:column;gap:10px">
+        {% if user.has_openai_key %}
+        <form method="post" style="margin-top:10px" onsubmit="return confirm('Remover sua chave da OpenAI? Os recursos de IA serão desativados.')">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="openai_key_remove">
+          <button type="submit" class="btn btn-ghost-danger"><i class="fa-solid fa-trash-can"></i> Remover chave</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
 
-          </div>
-        </div>
+    <div class="card">
+      <div class="card-header tone-primary"><div class="card-title"><i class="fa-solid fa-circle-question"></i> Como obter sua chave</div></div>
+      <div class="card-body">
+        <ol class="steps-list" style="gap:8px">
+          <li style="padding:10px 12px;font-size:13px"><span>Acesse <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" class="link">platform.openai.com/api-keys</a></span></li>
+          <li style="padding:10px 12px;font-size:13px"><span>Clique em <strong>Create new secret key</strong></span></li>
+          <li style="padding:10px 12px;font-size:13px"><span>Copie a chave (começa com <code>sk-</code>) e cole ao lado</span></li>
+        </ol>
+        <p class="form-hint" style="margin-top:14px;line-height:1.6">
+          <i class="fa-solid fa-lock"></i> A chave é armazenada criptografada e usada apenas nas suas análises.
+          O uso é cobrado na sua conta OpenAI (modelo <code>gpt-4o-mini</code>).
+        </p>
       </div>
     </div>
   </div>
@@ -138,29 +198,23 @@
 
 {% endblock %}
 
+{% block extra_css %}
+<style>@media (max-width: 1024px) { #pw-grid, #ai-grid { grid-template-columns: 1fr !important; } }</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
-function showTab(tabId, btn) {
-  ['tab-profile','tab-password'].forEach(id => {
-    document.getElementById(id).style.display = id === tabId ? 'block' : 'none';
-  });
-  ['btn-tab-profile','btn-tab-password'].forEach(id => {
-    const b = document.getElementById(id);
-    const active = id === btn.id;
-    b.style.borderBottomColor = active ? 'var(--primary)' : 'transparent';
-    b.style.color = active ? 'var(--primary)' : 'var(--text-secondary)';
-    b.style.fontWeight = active ? '600' : '500';
-  });
-}
-
 function previewPhoto(input) {
   if (!input.files || !input.files[0]) return;
   const reader = new FileReader();
   reader.onload = e => {
-    const w = document.getElementById('previewWrap');
-    w.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
-    const aw = document.getElementById('avatarWrap');
-    aw.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
+    ['previewWrap', 'avatarWrap'].forEach(id => {
+      const w = document.getElementById(id);
+      w.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      w.appendChild(img);
+    });
     document.getElementById('photoFileName').textContent = input.files[0].name;
   };
   reader.readAsDataURL(input.files[0]);

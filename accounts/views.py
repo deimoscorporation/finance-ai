@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
+from django.urls import reverse
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import LoginForm, RegisterForm, ProfileForm, ChangePasswordForm
+from .forms import LoginForm, RegisterForm, ProfileForm, ChangePasswordForm, OpenAIKeyForm
 
 
 def login_view(request):
@@ -50,11 +51,30 @@ def logout_view(request):
 def profile_view(request):
     profile_form = ProfileForm(request.POST or None, request.FILES or None, instance=request.user)
     password_form = ChangePasswordForm(request.POST or None)
+    openai_form = OpenAIKeyForm(request.POST or None)
+    active_tab = request.GET.get('tab', 'profile')
 
     if request.method == 'POST':
         action = request.POST.get('action')
+        if action == 'password':
+            active_tab = 'password'
 
-        if action == 'profile' and profile_form.is_valid():
+        if action == 'openai_key':
+            active_tab = 'openai'
+            if openai_form.is_valid():
+                request.user.openai_api_key = openai_form.cleaned_data['openai_api_key']
+                request.user.save(update_fields=['openai_api_key_encrypted'])
+                messages.success(request, 'Chave da OpenAI salva! Os recursos de IA já estão liberados.')
+                return redirect(reverse('profile') + '?tab=openai')
+            messages.error(request, 'Corrija os erros abaixo.')
+
+        elif action == 'openai_key_remove':
+            request.user.openai_api_key = ''
+            request.user.save(update_fields=['openai_api_key_encrypted'])
+            messages.info(request, 'Chave da OpenAI removida.')
+            return redirect(reverse('profile') + '?tab=openai')
+
+        elif action == 'profile' and profile_form.is_valid():
             profile_form.save()
             messages.success(request, 'Perfil atualizado com sucesso!')
             return redirect('profile')
@@ -76,4 +96,6 @@ def profile_view(request):
     return render(request, 'accounts/profile.html', {
         'profile_form': profile_form,
         'password_form': password_form,
+        'openai_form': openai_form,
+        'active_tab': active_tab,
     })

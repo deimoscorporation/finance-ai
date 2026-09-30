@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Ambiente virtual
+.venv/
+venv/
+
+# Segredos
+.env
+
+# Banco de dados local e uploads
+db.sqlite3
+media/
+staticfiles/
+
+# Artefatos do LaTeX
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc
+
+# Ferramentas
+.coverage
+htmlcov/
+.ruff_cache/
+

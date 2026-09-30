@@ -1,95 +1,78 @@
 {% extends 'base.html' %}
 {% block title %}Gastos Variáveis{% endblock %}
-{% block page_title %}Gastos Variáveis{% endblock %}
+{% block page_title %}Gastos variáveis{% endblock %}
 {% block page_sub %}Compras, alimentação e gastos do dia a dia{% endblock %}
 
 {% block header_right %}
-<div class="header-chip" style="background:#fdf2f8;border-color:#fbcfe8;color:#9d174d;font-weight:600">
-  🛒 Total: R$ {{ total|floatformat:2 }}
-</div>
+<div class="header-chip tone-warning"><i class="fa-solid fa-cart-shopping"></i> <span class="num">R$ {{ total|floatformat:"2g" }}</span></div>
 {% endblock %}
 
 {% block content %}
+<div class="crud-grid">
 
-<div class="section-card">
-  <div class="section-header">
-    <div class="section-header-text">
-      <h3>Novo gasto variável</h3>
-      <p>Supermercado, lazer, restaurante…</p>
-    </div>
-  </div>
-  <div class="section-body">
-    <form method="post" novalidate>
-      {% csrf_token %}
-      <div class="form-row">
-        {% for field in form %}
-        <div class="form-group">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% for e in field.errors %}<span class="form-error">⚠ {{ e }}</span>{% endfor %}
-        </div>
-        {% endfor %}
+  <div class="card">
+    <div class="card-header tone-warning">
+      <div>
+        <div class="card-title"><i class="fa-solid fa-circle-plus"></i> Novo gasto</div>
+        <div class="card-sub">Supermercado, lazer, restaurante…</div>
       </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary">+ Adicionar gasto</button>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate class="crud-form">
+        {% csrf_token %}
+        <div class="fields">{% include 'finance/_form_fields.html' %}</div>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Adicionar gasto</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Lançamentos</div>
+        <div class="card-sub">{{ items|length }} lançamento(s)</div>
       </div>
-    </form>
-  </div>
-</div>
-
-<div class="section-card">
-  <div class="section-header">
-    <div class="section-header-text">
-      <h3>Gastos variáveis</h3>
-      <p>{{ items|length }} lançamento(s)</p>
     </div>
-    <div class="section-header-meta">
-      Total: <strong style="color:var(--warning)">R$ {{ total|floatformat:2 }}</strong>
+
+    {% if items %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Descrição</th><th>Categoria</th><th>Data</th><th class="money">Valor</th><th class="text-right">Ações</th></tr>
+        </thead>
+        <tbody>
+          {% for r in items %}
+          <tr>
+            <td><div class="cell-main">{% include 'finance/_categoria_icon.html' with cat=r.categoria %}<span>{{ r.nome }}</span></div></td>
+            <td><span class="badge">{{ r.get_categoria_display }}</span></td>
+            <td class="num text-secondary" style="font-size:12.5px">{{ r.data|date:"d/m/Y" }}</td>
+            <td class="money text-warning">R$ {{ r.valor|floatformat:"2g" }}</td>
+            <td class="text-right">
+              <div class="row-actions">
+                <a href="{% url 'gasto_variavel_edit' r.pk %}" class="act" title="Editar"><i class="fa-solid fa-pen"></i></a>
+                <a href="{% url 'gasto_variavel_delete' r.pk %}" class="act del" title="Excluir"><i class="fa-solid fa-trash-can"></i></a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3"><span class="eyebrow">Total</span></td>
+            <td class="money text-warning">R$ {{ total|floatformat:"2g" }}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
+    {% else %}
+    <div class="empty">
+      <div class="ichip lg tone-warning"><i class="fa-solid fa-cart-shopping"></i></div>
+      <h3>Nenhum gasto registrado</h3>
+      <p>Registre compras, refeições, lazer e outras despesas do dia a dia.</p>
+    </div>
+    {% endif %}
   </div>
 
-  {% if items %}
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Descrição</th>
-          <th>Categoria</th>
-          <th>Data</th>
-          <th class="text-right">Valor</th>
-          <th class="text-right">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in items %}
-        <tr>
-          <td style="font-weight:500">{{ r.nome }}</td>
-          <td><span class="badge b-var">{{ r.get_categoria_display }}</span></td>
-          <td style="color:var(--text-secondary);font-size:13px">{{ r.data|date:"d/m/Y" }}</td>
-          <td class="text-right font-bold" style="color:var(--warning)">R$ {{ r.valor|floatformat:2 }}</td>
-          <td class="text-right" style="white-space:nowrap">
-            <a href="{% url 'gasto_variavel_edit' r.pk %}" class="btn-icon-edit">✏ Editar</a>
-            <a href="{% url 'gasto_variavel_delete' r.pk %}" class="btn-icon-del" style="margin-left:6px">🗑 Excluir</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      <tfoot>
-        <tr style="background:var(--surface-2)">
-          <td colspan="3" style="padding:12px 16px;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Total</td>
-          <td class="text-right" style="padding:12px 16px;font-size:15px;font-weight:700;color:var(--warning)">R$ {{ total|floatformat:2 }}</td>
-          <td></td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-  {% else %}
-  <div class="empty">
-    <div class="empty-icon">🛒</div>
-    <h3>Nenhum gasto variável registrado</h3>
-    <p>Registre compras, refeições, lazer e outras<br>despesas do dia a dia.</p>
-  </div>
-  {% endif %}
 </div>
-
 {% endblock %}

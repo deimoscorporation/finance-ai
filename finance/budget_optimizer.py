@@ -45,15 +45,16 @@ class BudgetOptimizer:
     Segue a mesma arquitetura de FinancialCoach e SpendingAnalyzer.
     """
 
-    def __init__(self, model: BaseLanguageModel = None):
+    def __init__(self, model: BaseLanguageModel = None, api_key: str = None):
         """
         Inicializa o otimizador com o modelo especificado.
         Se nenhum modelo for passado, usa ChatOpenAI gpt-4o-mini.
 
         :param model: Modelo de linguagem compatível com LangChain.
+        :param api_key: Chave da API OpenAI do usuário.
         """
         load_dotenv()
-        self.model = model or ChatOpenAI(model="gpt-4o-mini", temperature=0.4)
+        self.model = model or ChatOpenAI(model="gpt-4o-mini", temperature=0.4, api_key=api_key)
         self.parser = JsonOutputParser(pydantic_object=BudgetOptimization)
         self.prompt = self._build_prompt()
         self.chain = self._build_chain()
@@ -182,8 +183,6 @@ def _build_budget_context(user) -> str:
         'fii': 'FII', 'cripto': 'Cripto', 'previdencia': 'Previdência', 'outros': 'Outros',
     }
 
-    despesas_fixas_reais = total_fix
-    despesas_variaveis_reais = total_var
     poupanca_atual = total_res + total_inv
     taxa_poupanca_atual = pct(poupanca_atual)
     comprometimento = pct(total_gas)

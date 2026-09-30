@@ -4,91 +4,74 @@
 {% block page_sub %}Fundo de emergência e objetivos financeiros{% endblock %}
 
 {% block header_right %}
-<div class="header-chip" style="background:#fffbeb;border-color:#fde68a;color:#b45309;font-weight:600">
-  🏦 Mensal: R$ {{ total|floatformat:2 }}
-</div>
+<div class="header-chip tone-warning"><i class="fa-solid fa-piggy-bank"></i> <span class="num">R$ {{ total|floatformat:"2g" }}</span>/mês</div>
 {% endblock %}
 
 {% block content %}
+<div class="crud-grid">
 
-<div class="section-card">
-  <div class="section-header">
-    <div class="section-header-text">
-      <h3>Nova reserva</h3>
-      <p>Emergência, viagem, compra futura…</p>
+  <div class="card">
+    <div class="card-header tone-warning">
+      <div>
+        <div class="card-title"><i class="fa-solid fa-circle-plus"></i> Nova reserva</div>
+        <div class="card-sub">Emergência, viagem, compra futura…</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate class="crud-form">
+        {% csrf_token %}
+        <div class="fields">{% include 'finance/_form_fields.html' %}</div>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Adicionar reserva</button>
+      </form>
     </div>
   </div>
-  <div class="section-body">
-    <form method="post" novalidate>
-      {% csrf_token %}
-      <div class="form-row">
-        {% for field in form %}
-        <div class="form-group">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% for e in field.errors %}<span class="form-error">⚠ {{ e }}</span>{% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-secondary">+ Adicionar reserva</button>
-      </div>
-    </form>
-  </div>
-</div>
 
-<div class="section-card">
-  <div class="section-header">
-    <div class="section-header-text">
-      <h3>Minhas reservas</h3>
-      <p>{{ items|length }} reserva(s)</p>
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Minhas reservas</div>
+        <div class="card-sub">{{ items|length }} reserva(s) · aporte total de R$ {{ total|floatformat:"2g" }}/mês</div>
+      </div>
     </div>
-    <div class="section-header-meta">
-      Aporte mensal: <strong style="color:var(--warning)">R$ {{ total|floatformat:2 }}</strong>
-    </div>
-  </div>
-  <div class="section-body" style="display:flex;flex-direction:column;gap:14px">
-    {% if items %}
-      {% for r in items %}
-      <div style="border:1px solid var(--border);border-radius:12px;padding:20px;background:var(--surface);transition:box-shadow .2s" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,.07)'" onmouseout="this.style.boxShadow='none'">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:40px;height:40px;border-radius:10px;background:#fffbeb;border:1px solid #fde68a;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏦</div>
-            <div>
-              <div style="font-size:15px;font-weight:600">{{ r.nome }}</div>
-              <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Aporte mensal: <strong style="color:var(--warning)">R$ {{ r.valor|floatformat:2 }}</strong></div>
-            </div>
-          </div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <a href="{% url 'reserva_edit' r.pk %}" class="btn-icon-edit">✏ Editar</a>
-            <a href="{% url 'reserva_delete' r.pk %}" class="btn-icon-del">🗑 Excluir</a>
+
+    {% for r in items %}
+    <div class="reserve-card">
+      <div class="row-between" style="align-items:flex-start">
+        <div class="row" style="gap:12px">
+          <span class="ichip tone-warning"><i class="fa-solid fa-piggy-bank"></i></span>
+          <div>
+            <div class="fw-600" style="font-size:14.5px">{{ r.nome }}</div>
+            <div class="cell-sub">Aporte mensal <span class="num fw-600 text-warning">R$ {{ r.valor|floatformat:"2g" }}</span></div>
           </div>
         </div>
-        {% if r.meta %}
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:6px">
-          <span>Acumulado: <strong style="color:var(--text)">R$ {{ r.acumulado|floatformat:2 }}</strong></span>
-          <span>Meta: <strong style="color:var(--text)">R$ {{ r.meta|floatformat:2 }}</strong>
-            <span style="font-weight:700;color:{% if r.progresso >= 100 %}var(--success){% elif r.progresso >= 50 %}var(--warning){% else %}var(--primary){% endif %}"> · {{ r.progresso|floatformat:0 }}%</span>
-          </span>
+        <div class="row-actions">
+          <a href="{% url 'reserva_edit' r.pk %}" class="act" title="Editar"><i class="fa-solid fa-pen"></i></a>
+          <a href="{% url 'reserva_delete' r.pk %}" class="act del" title="Excluir"><i class="fa-solid fa-trash-can"></i></a>
         </div>
-        <div style="height:8px;background:#E2E8F0;border-radius:999px;overflow:hidden">
-          <div style="height:100%;border-radius:999px;width:{{ r.progresso|floatformat:0 }}%;background:{{ r.progresso_cor }};transition:width .6s cubic-bezier(.4,0,.2,1)"></div>
-        </div>
-        {% else %}
-        <div style="font-size:12px;color:var(--text-muted)">
-          Sem meta definida · Acumulado: <strong style="color:var(--text)">R$ {{ r.acumulado|floatformat:2 }}</strong>
-        </div>
-        {% endif %}
       </div>
-      {% endfor %}
-    {% else %}
+
+      {% if r.meta %}
+      <div class="{% if r.progresso >= 100 %}tone-success{% elif r.progresso >= 50 %}tone-warning{% else %}tone-primary{% endif %}" style="margin-top:14px">
+        <div class="row-between" style="font-size:12.5px;margin-bottom:7px">
+          <span class="text-secondary">Acumulado <span class="num fw-600" style="color:var(--text)">R$ {{ r.acumulado|floatformat:"2g" }}</span> de <span class="num">R$ {{ r.meta|floatformat:"2g" }}</span></span>
+          <span class="num fw-700 text-tone">{{ r.progresso|floatformat:0 }}%{% if r.progresso >= 100 %} <i class="fa-solid fa-trophy"></i>{% endif %}</span>
+        </div>
+        <div class="progress"><div class="progress-fill" style="width:{{ r.progresso|floatformat:0 }}%"></div></div>
+      </div>
+      {% else %}
+      <div class="cell-sub" style="margin-top:12px">
+        Sem meta definida · acumulado <span class="num fw-600" style="color:var(--text)">R$ {{ r.acumulado|floatformat:"2g" }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% empty %}
     <div class="empty">
-      <div class="empty-icon">🏦</div>
+      <div class="ichip lg tone-warning"><i class="fa-solid fa-piggy-bank"></i></div>
       <h3>Nenhuma reserva cadastrada</h3>
-      <p>Crie reservas para emergências, viagens<br>ou outros objetivos financeiros.</p>
+      <p>Crie reservas para emergências, viagens ou outros objetivos e acompanhe o progresso até a meta.</p>
     </div>
-    {% endif %}
+    {% endfor %}
   </div>
-</div>
 
+</div>
 {% endblock %}

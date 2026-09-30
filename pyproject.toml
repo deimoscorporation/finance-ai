@@ -1,0 +1,24 @@
+[project]
+name = "financepro"
+version = "1.0.0"
+description = "Finanças pessoais com assistentes de IA (Django + LangChain + OpenAI)"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "Deimos Corp" }]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+extend-exclude = ["*/migrations/*", ".venv", "staticfiles"]
+
+[tool.ruff.lint]
+# Erros reais: sintaxe, nomes indefinidos, imports e variáveis sem uso
+select = ["E9", "F"]
+
+[tool.coverage.run]
+source = ["accounts", "finance"]
+omit = ["*/migrations/*", "*/tests.py"]
+
+[tool.coverage.report]
+skip_empty = true

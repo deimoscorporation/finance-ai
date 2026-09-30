@@ -4,110 +4,95 @@
 {% block page_sub %}Aportes e carteira de investimentos{% endblock %}
 
 {% block header_right %}
-<div class="header-chip" style="background:#f5f3ff;border-color:#ddd6fe;color:#6d28d9;font-weight:600">
-  📈 Mensal: R$ {{ total_mes|floatformat:2 }}
-</div>
+<div class="header-chip tone-purple"><i class="fa-solid fa-chart-column"></i> <span class="num">R$ {{ total_mes|floatformat:"2g" }}</span>/mês</div>
 {% endblock %}
 
 {% block content %}
 
-<div class="section-card">
-  <div class="section-header">
-    <div class="section-header-text">
-      <h3>Novo investimento</h3>
-      <p>Renda fixa, variável, cripto, previdência…</p>
-    </div>
-  </div>
-  <div class="section-body">
-    <form method="post" novalidate>
-      {% csrf_token %}
-      <div class="form-row">
-        {% for field in form %}
-        <div class="form-group">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% for e in field.errors %}<span class="form-error">⚠ {{ e }}</span>{% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-purple">+ Adicionar investimento</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Resumo -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-  <div class="stat-card c-invest">
-    <div class="stat-card-accent" style="background:var(--purple)"></div>
-    <div class="stat-label">Aporte mensal</div>
-    <div class="stat-value text-purple">R$ {{ total_mes|floatformat:2 }}</div>
+<div class="cards-grid">
+  <div class="stat-card tone-purple">
+    <div class="stat-head"><span class="stat-label">Aporte mensal</span><span class="ichip sm"><i class="fa-solid fa-arrow-trend-up"></i></span></div>
+    <div class="stat-value">R$ {{ total_mes|floatformat:"2g" }}</div>
     <div class="stat-sub">{{ items|length }} ativo(s) cadastrado(s)</div>
   </div>
-  <div class="stat-card" style="border-top:3px solid var(--secondary)">
-    <div class="stat-card-accent" style="background:var(--secondary)"></div>
-    <div class="stat-label">Total investido</div>
-    <div class="stat-value" style="color:var(--secondary)">R$ {{ total_total|floatformat:2 }}</div>
+  <div class="stat-card tone-primary">
+    <div class="stat-head"><span class="stat-label">Total investido</span><span class="ichip sm"><i class="fa-solid fa-vault"></i></span></div>
+    <div class="stat-value">R$ {{ total_total|floatformat:"2g" }}</div>
     <div class="stat-sub">Patrimônio acumulado</div>
   </div>
+  <a href="{% url 'investment_assistant' %}" class="stat-card tone-info" style="display:block">
+    <div class="stat-head"><span class="stat-label">Análise da carteira</span><span class="ichip sm"><i class="fa-solid fa-wand-magic-sparkles"></i></span></div>
+    <div class="stat-value sm" style="color:var(--text)">Investimentos IA <i class="fa-solid fa-arrow-right" style="font-size:12px"></i></div>
+    <div class="stat-sub">Perfil de risco e alocação ideal</div>
+  </a>
 </div>
 
-<div class="section-card">
-  <div class="section-header">
-    <div class="section-header-text">
-      <h3>Meus investimentos</h3>
-      <p>{{ items|length }} ativo(s)</p>
+<div class="crud-grid">
+
+  <div class="card">
+    <div class="card-header tone-purple">
+      <div>
+        <div class="card-title"><i class="fa-solid fa-circle-plus"></i> Novo investimento</div>
+        <div class="card-sub">Renda fixa, variável, cripto, previdência…</div>
+      </div>
     </div>
-    <div class="section-header-meta">
-      Mensal: <strong class="text-purple">R$ {{ total_mes|floatformat:2 }}</strong>
-      &nbsp;·&nbsp; Total: <strong style="color:var(--secondary)">R$ {{ total_total|floatformat:2 }}</strong>
+    <div class="card-body">
+      <form method="post" novalidate class="crud-form">
+        {% csrf_token %}
+        <div class="fields">{% include 'finance/_form_fields.html' %}</div>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Adicionar investimento</button>
+      </form>
     </div>
   </div>
 
-  {% if items %}
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Descrição</th>
-          <th>Tipo</th>
-          <th class="text-right">Aporte / mês</th>
-          <th class="text-right">Total investido</th>
-          <th class="text-right">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in items %}
-        <tr>
-          <td style="font-weight:500">{{ r.nome }}</td>
-          <td><span class="badge b-invest">{{ r.get_tipo_display }}</span></td>
-          <td class="text-right font-bold text-purple">R$ {{ r.valor|floatformat:2 }}</td>
-          <td class="text-right font-bold" style="color:var(--secondary)">R$ {{ r.total|floatformat:2 }}</td>
-          <td class="text-right" style="white-space:nowrap">
-            <a href="{% url 'investimento_edit' r.pk %}" class="btn-icon-edit">✏ Editar</a>
-            <a href="{% url 'investimento_delete' r.pk %}" class="btn-icon-del" style="margin-left:6px">🗑 Excluir</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      <tfoot>
-        <tr style="background:var(--surface-2)">
-          <td colspan="2" style="padding:12px 16px;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Total</td>
-          <td class="text-right" style="padding:12px 16px;font-size:15px;font-weight:700;color:var(--purple)">R$ {{ total_mes|floatformat:2 }}</td>
-          <td class="text-right" style="padding:12px 16px;font-size:15px;font-weight:700;color:var(--secondary)">R$ {{ total_total|floatformat:2 }}</td>
-          <td></td>
-        </tr>
-      </tfoot>
-    </table>
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Minha carteira</div>
+        <div class="card-sub">{{ items|length }} ativo(s)</div>
+      </div>
+    </div>
+
+    {% if items %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Descrição</th><th>Tipo</th><th class="money">Aporte / mês</th><th class="money">Total investido</th><th class="text-right">Ações</th></tr>
+        </thead>
+        <tbody>
+          {% for r in items %}
+          <tr>
+            <td><div class="cell-main">{% include 'finance/_categoria_icon.html' with cat=r.tipo %}<span>{{ r.nome }}</span></div></td>
+            <td><span class="badge tone-purple">{{ r.get_tipo_display }}</span></td>
+            <td class="money text-purple">R$ {{ r.valor|floatformat:"2g" }}</td>
+            <td class="money">R$ {{ r.total|floatformat:"2g" }}</td>
+            <td class="text-right">
+              <div class="row-actions">
+                <a href="{% url 'investimento_edit' r.pk %}" class="act" title="Editar"><i class="fa-solid fa-pen"></i></a>
+                <a href="{% url 'investimento_delete' r.pk %}" class="act del" title="Excluir"><i class="fa-solid fa-trash-can"></i></a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"><span class="eyebrow">Total</span></td>
+            <td class="money text-purple">R$ {{ total_mes|floatformat:"2g" }}</td>
+            <td class="money">R$ {{ total_total|floatformat:"2g" }}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty">
+      <div class="ichip lg tone-purple"><i class="fa-solid fa-chart-column"></i></div>
+      <h3>Nenhum investimento cadastrado</h3>
+      <p>Registre suas aplicações e aportes mensais para acompanhar o crescimento do seu patrimônio.</p>
+    </div>
+    {% endif %}
   </div>
-  {% else %}
-  <div class="empty">
-    <div class="empty-icon">📈</div>
-    <h3>Nenhum investimento cadastrado</h3>
-    <p>Registre suas aplicações, aportes mensais<br>e acompanhe o crescimento do seu patrimônio.</p>
-  </div>
-  {% endif %}
+
 </div>
-
 {% endblock %}

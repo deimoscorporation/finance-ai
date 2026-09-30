@@ -1,0 +1,54 @@
+name: 🐛 Reportar bug
+description: Algo não está funcionando como deveria
+labels: ["bug", "triagem"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar! Antes de enviar, verifique se já não existe uma issue igual.
+        **Nunca cole sua chave da OpenAI, senhas ou dados financeiros reais aqui.**
+  - type: textarea
+    id: descricao
+    attributes:
+      label: O que aconteceu?
+      description: Descreva o problema de forma clara.
+    validations:
+      required: true
+  - type: textarea
+    id: passos
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1. Acesse '...'
+        2. Clique em '...'
+        3. Veja o erro
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamento esperado
+    validations:
+      required: true
+  - type: dropdown
+    id: instalacao
+    attributes:
+      label: Como você está rodando o projeto?
+      options:
+        - Local (runserver)
+        - Docker / docker compose
+        - Servidor próprio (Gunicorn etc.)
+        - Outro
+    validations:
+      required: true
+  - type: input
+    id: versao
+    attributes:
+      label: Versão / commit
+      placeholder: "ex.: 1.0.0 ou abc1234"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs ou prints
+      description: Cole logs relevantes (sem dados sensíveis) ou anexe prints.
+      render: shell

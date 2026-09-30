@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
+from .crypto import decrypt, encrypt
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -27,6 +29,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True, blank=True,
         verbose_name='Foto do perfil'
     )
+    openai_api_key_encrypted = models.TextField(
+        blank=True, default='',
+        verbose_name='Chave da API OpenAI (criptografada)'
+    )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -48,3 +54,22 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.first_name
+
+    @property
+    def openai_api_key(self):
+        return decrypt(self.openai_api_key_encrypted)
+
+    @openai_api_key.setter
+    def openai_api_key(self, value):
+        self.openai_api_key_encrypted = encrypt((value or '').strip())
+
+    @property
+    def has_openai_key(self):
+        return bool(self.openai_api_key)
+
+    @property
+    def openai_api_key_masked(self):
+        key = self.openai_api_key
+        if not key:
+            return ''
+        return f'{key[:7]}…{key[-4:]}'

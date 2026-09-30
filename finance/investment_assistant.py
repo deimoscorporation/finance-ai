@@ -69,15 +69,16 @@ class InvestmentAssistant:
     Segue a mesma arquitetura de FinancialCoach, SpendingAnalyzer e BudgetOptimizer.
     """
 
-    def __init__(self, model: BaseLanguageModel = None):
+    def __init__(self, model: BaseLanguageModel = None, api_key: str = None):
         """
         Inicializa o assistente com o modelo especificado.
         Se nenhum modelo for passado, usa ChatOpenAI gpt-4o-mini.
 
         :param model: Modelo de linguagem compatível com LangChain.
+        :param api_key: Chave da API OpenAI do usuário.
         """
         load_dotenv()
-        self.model = model or ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+        self.model = model or ChatOpenAI(model="gpt-4o-mini", temperature=0.3, api_key=api_key)
         self.parser = JsonOutputParser(pydantic_object=InvestmentAnalysis)
         self.prompt = self._build_prompt()
         self.chain = self._build_chain()

@@ -9,7 +9,20 @@ from .forms import ReceitaForm, GastoFixoForm, GastoVariavelForm, ReservaForm, I
 import json
 import logging
 
+from openai import AuthenticationError
+
 logger = logging.getLogger(__name__)
+
+
+MISSING_KEY_MSG = 'Configure sua chave da OpenAI em Meu Perfil → Chave OpenAI para usar os recursos de IA.'
+INVALID_KEY_MSG = 'Sua chave da OpenAI foi recusada. Verifique-a em Meu Perfil → Chave OpenAI.'
+
+
+def _require_openai_key(user):
+    key = user.openai_api_key
+    if not key:
+        raise ValueError(MISSING_KEY_MSG)
+    return key
 
 
 def _totals(user):
@@ -39,21 +52,21 @@ def dashboard(request):
             float(t['fix']), float(t['vari']), float(t['res']),
             float(t['inv']), max(float(t['sal']), 0)
         ],
-        'colors': ['#DC2626', '#F59E0B', '#D97706', '#7C3AED', '#16A34A'],
+        'colors': ['--c-fixos', '--c-var', '--c-res', '--c-inv', '--c-free'],
     })
 
     chart_bar = json.dumps({
         'labels': ['Fixos', 'Variáveis', 'Reservas', 'Invest.'],
         'data': [pct(t['fix']), pct(t['vari']), pct(t['res']), pct(t['inv'])],
-        'colors': ['#DC2626CC', '#F59E0BCC', '#D97706CC', '#7C3AEDCC'],
+        'colors': ['--c-fixos', '--c-var', '--c-res', '--c-inv'],
     })
 
     alloc = [
-        {'label': 'Gastos Fixos',    'valor': t['fix'],  'pct': pct(t['fix']),  'color': '#DC2626'},
-        {'label': 'Gastos Variáveis','valor': t['vari'], 'pct': pct(t['vari']), 'color': '#F59E0B'},
-        {'label': 'Reservas',        'valor': t['res'],  'pct': pct(t['res']),  'color': '#D97706'},
-        {'label': 'Investimentos',   'valor': t['inv'],  'pct': pct(t['inv']),  'color': '#7C3AED'},
-        {'label': 'Saldo Livre',     'valor': max(t['sal'], Decimal('0')), 'pct': pct(max(t['sal'], Decimal('0'))), 'color': '#16A34A'},
+        {'label': 'Gastos Fixos',    'valor': t['fix'],  'pct': pct(t['fix']),  'color': 'var(--c-fixos)'},
+        {'label': 'Gastos Variáveis','valor': t['vari'], 'pct': pct(t['vari']), 'color': 'var(--c-var)'},
+        {'label': 'Reservas',        'valor': t['res'],  'pct': pct(t['res']),  'color': 'var(--c-res)'},
+        {'label': 'Investimentos',   'valor': t['inv'],  'pct': pct(t['inv']),  'color': 'var(--c-inv)'},
+        {'label': 'Saldo Livre',     'valor': max(t['sal'], Decimal('0')), 'pct': pct(max(t['sal'], Decimal('0'))), 'color': 'var(--c-free)'},
     ]
 
     # Gastos fixos checklist
@@ -84,11 +97,13 @@ def ai_coach(request):
 
     try:
         from .ai_coach import FinancialCoach
-        analysis = FinancialCoach().analyse(request.user)
+        analysis = FinancialCoach(api_key=_require_openai_key(request.user)).analyse(request.user)
         return JsonResponse({'success': True, 'analysis': analysis})
     except ValueError as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except Exception as e:
+    except AuthenticationError:
+        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
+    except Exception:
         logger.exception("AI Coach error for user %s", request.user.pk)
         return JsonResponse(
             {'success': False, 'error': 'Erro ao processar análise. Verifique sua API key e tente novamente.'},
@@ -108,11 +123,13 @@ def investment_assistant_run(request):
 
     try:
         from .investment_assistant import InvestmentAssistant
-        analysis = InvestmentAssistant().analyse(request.user)
+        analysis = InvestmentAssistant(api_key=_require_openai_key(request.user)).analyse(request.user)
         return JsonResponse({'success': True, 'analysis': analysis})
     except ValueError as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except Exception as e:
+    except AuthenticationError:
+        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
+    except Exception:
         logger.exception("Investment assistant error for user %s", request.user.pk)
         return JsonResponse(
             {'success': False, 'error': 'Erro ao processar análise. Verifique sua API key e tente novamente.'},
@@ -132,11 +149,13 @@ def budget_optimizer_run(request):
 
     try:
         from .budget_optimizer import BudgetOptimizer
-        analysis = BudgetOptimizer().analyse(request.user)
+        analysis = BudgetOptimizer(api_key=_require_openai_key(request.user)).analyse(request.user)
         return JsonResponse({'success': True, 'analysis': analysis})
     except ValueError as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except Exception as e:
+    except AuthenticationError:
+        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
+    except Exception:
         logger.exception("Budget optimizer error for user %s", request.user.pk)
         return JsonResponse(
             {'success': False, 'error': 'Erro ao gerar orçamento. Verifique sua API key e tente novamente.'},
@@ -156,11 +175,13 @@ def spending_analysis_run(request):
 
     try:
         from .spending_analyzer import SpendingAnalyzer
-        analysis = SpendingAnalyzer().analyse(request.user)
+        analysis = SpendingAnalyzer(api_key=_require_openai_key(request.user)).analyse(request.user)
         return JsonResponse({'success': True, 'analysis': analysis})
     except ValueError as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except Exception as e:
+    except AuthenticationError:
+        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
+    except Exception:
         logger.exception("Spending analysis error for user %s", request.user.pk)
         return JsonResponse(
             {'success': False, 'error': 'Erro ao processar análise. Verifique sua API key e tente novamente.'},
@@ -186,11 +207,13 @@ def whatif_chat(request):
             return JsonResponse({'success': False, 'error': 'Pergunta não pode ser vazia.'}, status=400)
 
         from .whatif_simulator import WhatIfSimulator
-        result = WhatIfSimulator().chat(request.user, pergunta, historico)
+        result = WhatIfSimulator(api_key=_require_openai_key(request.user)).chat(request.user, pergunta, historico)
         return JsonResponse({'success': True, 'result': result})
     except ValueError as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except Exception as e:
+    except AuthenticationError:
+        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
+    except Exception:
         logger.exception("What-if simulator error for user %s", request.user.pk)
         return JsonResponse(
             {'success': False, 'error': 'Erro ao processar simulação. Verifique sua API key e tente novamente.'},

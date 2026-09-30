@@ -1,362 +1,204 @@
 {% extends 'base.html' %}
-{% block title %}Análise de Gastos{% endblock %}
-{% block page_title %}AI Spending Analysis{% endblock %}
+{% block title %}Análise de gastos{% endblock %}
+{% block page_title %}Análise de gastos{% endblock %}
 {% block page_sub %}Detecta desperdícios, padrões ruins e riscos nos seus gastos{% endblock %}
 
 {% block header_right %}
-<button id="run-btn" onclick="runAnalysis()"
-  style="display:flex;align-items:center;gap:8px;background:var(--primary);color:white;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s"
-  onmouseover="this.style.background='var(--primary-dark)';this.style.transform='translateY(-1px)'"
-  onmouseout="this.style.background='var(--primary)';this.style.transform='none'">
-  <span id="run-btn-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-  <span id="run-btn-text">Analisar meus gastos</span>
+<button id="run-btn" class="btn btn-primary" onclick="runAnalysis()">
+  <i data-icon class="fa-solid fa-magnifying-glass-chart"></i><span data-label>Analisar gastos</span>
 </button>
 {% endblock %}
 
 {% block content %}
 
-<!-- ── KPI Cards (visíveis após análise) ── -->
-<div id="kpi-section" style="display:none;margin-bottom:22px">
-  <div class="cards-grid">
-    <div class="stat-card">
-      <div class="stat-card-accent" style="background:#DC2626"></div>
-      <div class="stat-card-bg"><i class="fa-solid fa-trash-can"></i></div>
-      <div class="stat-icon-circle" style="background:#fef2f2;color:var(--danger)"><i class="fa-solid fa-trash-can"></i></div>
-      <div class="stat-label">Desperdício Mensal</div>
-      <div id="kpi-economia-mensal" class="stat-value negative">R$ —</div>
-      <div class="stat-sub">Potencial de economia</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-accent" style="background:#7C3AED"></div>
-      <div class="stat-card-bg"><i class="fa-solid fa-calendar-days"></i></div>
-      <div class="stat-icon-circle" style="background:#f5f3ff;color:var(--purple)"><i class="fa-solid fa-calendar-days"></i></div>
-      <div class="stat-label">Economia Anual</div>
-      <div id="kpi-economia-anual" class="stat-value text-purple">R$ —</div>
-      <div class="stat-sub">Se eliminar desperdícios</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-accent" style="background:#F59E0B"></div>
-      <div class="stat-card-bg"><i class="fa-solid fa-triangle-exclamation"></i></div>
-      <div class="stat-icon-circle" style="background:#fffbeb;color:var(--warning)"><i class="fa-solid fa-triangle-exclamation"></i></div>
-      <div class="stat-label">Padrões Ruins</div>
-      <div id="kpi-padroes" class="stat-value" style="color:var(--warning)">—</div>
-      <div class="stat-sub">Comportamentos identificados</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-accent" style="background:#DC2626"></div>
-      <div class="stat-card-bg"><i class="fa-solid fa-circle-exclamation"></i></div>
-      <div class="stat-icon-circle" style="background:#fef2f2;color:var(--danger)"><i class="fa-solid fa-circle-exclamation"></i></div>
-      <div class="stat-label">Riscos Detectados</div>
-      <div id="kpi-riscos" class="stat-value negative">—</div>
-      <div class="stat-sub">Por nível de severidade</div>
-    </div>
+<!-- KPIs (após análise) -->
+<div id="kpi-section" class="cards-grid hidden">
+  <div class="stat-card tone-danger">
+    <div class="stat-head"><span class="stat-label">Desperdício mensal</span><span class="ichip sm"><i class="fa-solid fa-trash-can"></i></span></div>
+    <div id="kpi-economia-mensal" class="stat-value">—</div>
+    <div class="stat-sub">Potencial de economia</div>
+  </div>
+  <div class="stat-card tone-purple">
+    <div class="stat-head"><span class="stat-label">Economia anual</span><span class="ichip sm"><i class="fa-regular fa-calendar"></i></span></div>
+    <div id="kpi-economia-anual" class="stat-value">—</div>
+    <div class="stat-sub">Se eliminar desperdícios</div>
+  </div>
+  <div class="stat-card tone-warning">
+    <div class="stat-head"><span class="stat-label">Padrões ruins</span><span class="ichip sm"><i class="fa-solid fa-arrow-trend-down"></i></span></div>
+    <div id="kpi-padroes" class="stat-value">—</div>
+    <div class="stat-sub">Comportamentos identificados</div>
+  </div>
+  <div class="stat-card tone-danger">
+    <div class="stat-head"><span class="stat-label">Riscos</span><span class="ichip sm"><i class="fa-solid fa-circle-exclamation"></i></span></div>
+    <div id="kpi-riscos" class="stat-value sm">—</div>
+    <div class="stat-sub">Por nível de severidade</div>
   </div>
 </div>
 
-<!-- ── Idle state ── -->
-<div id="sa-idle">
-  <div style="background:white;border:1px solid var(--border);border-radius:16px;padding:56px 32px;text-align:center;box-shadow:var(--shadow-sm)">
-    <div style="font-size:56px;margin-bottom:16px;color:var(--primary)"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
-    <h2 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">Auditoria inteligente dos seus gastos</h2>
-    <p style="font-size:14px;color:var(--text-secondary);max-width:460px;margin:0 auto 28px;line-height:1.6">
-      A IA analisa cada centavo e identifica desperdícios, assinaturas esquecidas, padrões problemáticos e riscos financeiros — com valores exatos em R$.
-    </p>
-    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:32px">
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
-        <span style="width:28px;height:28px;border-radius:8px;background:#fef2f2;display:flex;align-items:center;justify-content:center;color:var(--danger)"><i class="fa-solid fa-trash-can"></i></span>
-        Desperdícios detectados
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
-        <span style="width:28px;height:28px;border-radius:8px;background:#fffbeb;display:flex;align-items:center;justify-content:center;color:var(--warning)"><i class="fa-solid fa-arrow-trend-down"></i></span>
-        Padrões ruins
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
-        <span style="width:28px;height:28px;border-radius:8px;background:#fef2f2;display:flex;align-items:center;justify-content:center;color:var(--danger)"><i class="fa-solid fa-circle-exclamation"></i></span>
-        Riscos financeiros
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
-        <span style="width:28px;height:28px;border-radius:8px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;color:var(--success)"><i class="fa-solid fa-bolt"></i></span>
-        Quick wins
-      </div>
-    </div>
-    <button onclick="runAnalysis()"
-      style="background:var(--primary);color:white;border:none;border-radius:10px;padding:13px 32px;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:0 4px 16px rgba(255,87,16,.3)"
-      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(255,87,16,.4)'"
-      onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(255,87,16,.3)'">
-      <i class="fa-solid fa-magnifying-glass"></i> Iniciar auditoria agora
-    </button>
+<!-- Idle -->
+<section id="sa-idle" class="brand-panel ai-intro">
+  <span class="eyebrow">Auditoria com IA</span>
+  <h2>Descubra para onde seu dinheiro está escapando</h2>
+  <p>A IA analisa cada categoria de gasto e identifica desperdícios, assinaturas esquecidas, padrões problemáticos e riscos financeiros, com valores exatos em R$.</p>
+  <div class="ai-features">
+    <div class="ai-feature tone-danger"><span class="ichip sm"><i class="fa-solid fa-trash-can"></i></span><div><strong>Desperdícios</strong><span>Gastos que podem ser cortados</span></div></div>
+    <div class="ai-feature tone-warning"><span class="ichip sm"><i class="fa-solid fa-arrow-trend-down"></i></span><div><strong>Padrões ruins</strong><span>Hábitos que corroem o orçamento</span></div></div>
+    <div class="ai-feature tone-info"><span class="ichip sm"><i class="fa-solid fa-shield-halved"></i></span><div><strong>Riscos</strong><span>Ameaças à sua estabilidade</span></div></div>
+    <div class="ai-feature tone-success"><span class="ichip sm"><i class="fa-solid fa-bolt"></i></span><div><strong>Quick wins</strong><span>Ações para fazer hoje</span></div></div>
   </div>
+  <button id="cta-btn" class="btn btn-primary btn-lg" onclick="runAnalysis()">
+    <i data-icon class="fa-solid fa-magnifying-glass-chart"></i><span data-label>Iniciar auditoria</span>
+  </button>
+  <div class="ai-disclaimer"><i class="fa-solid fa-circle-info"></i> Estimativas educativas geradas por IA a partir dos seus dados.</div>
+</section>
+
+<!-- Loading -->
+<div id="sa-loading" class="card loading-state hidden">
+  <div class="spinner"></div>
+  <h3>Auditando seus gastos…</h3>
+  <p>A IA está analisando cada categoria. Isso pode levar alguns segundos.</p>
 </div>
 
-<!-- ── Loading state ── -->
-<div id="sa-loading" style="display:none">
-  <div style="background:white;border:1px solid var(--border);border-radius:16px;padding:56px 32px;text-align:center;box-shadow:var(--shadow-sm)">
-    <div style="display:inline-block;width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px"></div>
-    <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">Auditando seus gastos...</h3>
-    <p style="font-size:13px;color:var(--text-muted)">A IA está analisando cada transação. Isso pode levar alguns segundos.</p>
-  </div>
+<!-- Error -->
+<div id="sa-error" class="callout tone-danger hidden">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <div><div class="callout-title">Não foi possível concluir a auditoria</div><p id="sa-error-msg"></p></div>
 </div>
 
-<!-- ── Error state ── -->
-<div id="sa-error" style="display:none">
-  <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:14px">
-    <span style="font-size:24px;color:var(--danger)"><i class="fa-solid fa-triangle-exclamation"></i></span>
+<!-- Results -->
+<div id="sa-results" class="hidden">
+
+  <section class="brand-panel summary-panel mb-20">
+    <span class="ichip lg"><i class="fa-solid fa-brain"></i></span>
     <div>
-      <div style="font-size:14px;font-weight:600;color:var(--danger)">Erro na auditoria</div>
-      <div id="sa-error-msg" style="font-size:13px;color:var(--danger);margin-top:3px"></div>
+      <div class="eyebrow" style="margin-bottom:6px">Resumo executivo</div>
+      <p id="sa-resumo"></p>
     </div>
-  </div>
-</div>
+  </section>
 
-<!-- ── Results ── -->
-<div id="sa-results" style="display:none">
-
-  <!-- Resumo executivo -->
-  <div class="section-card" style="margin-bottom:20px">
-    <div style="background:linear-gradient(135deg,#1a1760 0%,#2d2a8e 50%,#1a1760 100%);padding:20px 24px;display:flex;align-items:center;gap:14px">
-      <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;color:white"><i class="fa-solid fa-brain"></i></div>
+  <div class="card mb-20">
+    <div class="card-header tone-danger">
       <div>
-        <div style="font-size:15px;font-weight:700;color:white">Resumo Executivo</div>
-        <p id="sa-resumo" style="font-size:13px;color:rgba(255,255,255,.7);margin-top:3px;line-height:1.5"></p>
+        <div class="card-title"><i class="fa-solid fa-trash-can"></i> Desperdícios detectados</div>
+        <div class="card-sub">Gastos desnecessários ou excessivos que podem ser eliminados</div>
       </div>
+      <span id="desperdicios-total-badge" class="badge tone-success"></span>
+    </div>
+    <div class="card-body"><div id="desperdicios-grid" class="grid grid-2"></div></div>
+  </div>
+
+  <div class="grid grid-2 mb-20">
+    <div class="card">
+      <div class="card-header tone-warning">
+        <div>
+          <div class="card-title"><i class="fa-solid fa-arrow-trend-down"></i> Padrões ruins</div>
+          <div class="card-sub">Comportamentos que prejudicam seus resultados</div>
+        </div>
+      </div>
+      <div class="card-body"><div id="padroes-list" class="stack"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header tone-danger">
+        <div>
+          <div class="card-title"><i class="fa-solid fa-circle-exclamation"></i> Riscos financeiros</div>
+          <div class="card-sub">Situações que podem comprometer sua estabilidade</div>
+        </div>
+      </div>
+      <div class="card-body"><div id="riscos-list" class="stack"></div></div>
     </div>
   </div>
 
-  <!-- Desperdícios -->
-  <div class="section-card" style="margin-bottom:20px">
-    <div class="section-header">
-      <div class="section-header-text">
-        <h3><i class="fa-solid fa-trash-can" style="color:var(--danger)"></i> Desperdícios Detectados</h3>
-        <p>Gastos desnecessários ou excessivos que podem ser eliminados</p>
-      </div>
-      <div id="desperdicios-total-badge" style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;color:var(--danger)"></div>
-    </div>
-    <div class="section-body" style="padding:16px 24px">
-      <div id="desperdicios-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px"></div>
-    </div>
-  </div>
-
-  <!-- Padrões ruins -->
-  <div class="section-card" style="margin-bottom:20px">
-    <div class="section-header">
-      <div class="section-header-text">
-        <h3><i class="fa-solid fa-arrow-trend-down" style="color:var(--warning)"></i> Padrões Ruins Identificados</h3>
-        <p>Comportamentos financeiros que prejudicam seus resultados</p>
+  <div class="card">
+    <div class="card-header tone-success">
+      <div>
+        <div class="card-title"><i class="fa-solid fa-bolt"></i> Quick wins: faça hoje</div>
+        <div class="card-sub">Ações imediatas para começar a economizar esta semana</div>
       </div>
     </div>
-    <div class="section-body" style="padding:16px 24px">
-      <div id="padroes-list" style="display:flex;flex-direction:column;gap:10px"></div>
-    </div>
-  </div>
-
-  <!-- Riscos -->
-  <div class="section-card" style="margin-bottom:20px">
-    <div class="section-header">
-      <div class="section-header-text">
-        <h3><i class="fa-solid fa-circle-exclamation" style="color:var(--danger)"></i> Riscos Financeiros</h3>
-        <p>Situações que podem comprometer sua estabilidade financeira</p>
-      </div>
-    </div>
-    <div class="section-body" style="padding:16px 24px">
-      <div id="riscos-list" style="display:flex;flex-direction:column;gap:10px"></div>
-    </div>
-  </div>
-
-  <!-- Quick Wins -->
-  <div class="section-card">
-    <div class="section-header" style="background:linear-gradient(90deg,#f0fdf4,white)">
-      <div class="section-header-text">
-        <h3><i class="fa-solid fa-bolt" style="color:var(--success)"></i> Quick Wins — Faça Hoje</h3>
-        <p>Ações imediatas para começar a economizar esta semana</p>
-      </div>
-    </div>
-    <div class="section-body" style="padding:16px 24px">
-      <div id="quick-wins-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px"></div>
-    </div>
+    <div class="card-body"><ol id="quick-wins-list" class="steps-list tone-success"></ol></div>
   </div>
 
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-.text-purple { color: var(--purple); }
-</style>
 <script>
-const SA_CSRF = '{{ csrf_token }}';
-
-function fmtBRL(v) {
-  return 'R$ ' + parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-}
+const esc = App.esc, brl = App.fmtBRL;
 
 function runAnalysis() {
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true;
-  document.getElementById('run-btn-icon').innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
-  document.getElementById('run-btn-text').textContent = 'Analisando...';
-
-  document.getElementById('sa-idle').style.display    = 'none';
-  document.getElementById('sa-error').style.display   = 'none';
-  document.getElementById('sa-results').style.display = 'none';
-  document.getElementById('kpi-section').style.display= 'none';
-  document.getElementById('sa-loading').style.display = 'block';
-
-  fetch('/spending-analysis/run/', {
-    method: 'POST',
-    headers: { 'X-CSRFToken': SA_CSRF },
-  })
-  .then(r => r.json())
-  .then(data => {
-    document.getElementById('sa-loading').style.display = 'none';
-    btn.disabled = false;
-    document.getElementById('run-btn-icon').innerHTML = '<i class="fa-solid fa-rotate"></i>';
-    document.getElementById('run-btn-text').textContent = 'Reanalisar';
-
-    if (!data.success) {
-      document.getElementById('sa-error-msg').textContent = data.error;
-      document.getElementById('sa-error').style.display = 'block';
-      return;
-    }
-    renderResults(data.analysis);
-  })
-  .catch(() => {
-    document.getElementById('sa-loading').style.display = 'none';
-    btn.disabled = false;
-    document.getElementById('run-btn-icon').innerHTML = '<i class="fa-solid fa-magnifying-glass"></i>';
-    document.getElementById('run-btn-text').textContent = 'Analisar meus gastos';
-    document.getElementById('sa-error-msg').textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
-    document.getElementById('sa-error').style.display = 'block';
+  App.aiRun({
+    url: '/spending-analysis/run/',
+    btn: ['run-btn', 'cta-btn'],
+    states: { idle: 'sa-idle', loading: 'sa-loading', error: 'sa-error', results: 'sa-results', extra: ['kpi-section'] },
+    errorMsg: 'sa-error-msg',
+    labels: { busy: 'Analisando…', again: 'Reanalisar' },
+    onSuccess: data => renderResults(data.analysis),
   });
 }
 
+const PADRAO_TONE = { gasto_excessivo: 'tone-warning', sem_reserva: 'tone-danger', concentracao: 'tone-warning', impulso: 'tone-purple', assinatura_esquecida: 'tone-danger' };
+const RISCO = {
+  alto:  { tone: 'tone-danger',  label: 'Alto' },
+  medio: { tone: 'tone-warning', label: 'Médio' },
+  baixo: { tone: 'tone-success', label: 'Baixo' },
+};
+
 function renderResults(a) {
-  // KPI cards
-  document.getElementById('kpi-economia-mensal').textContent = fmtBRL(a.economia_total_mensal);
-  document.getElementById('kpi-economia-anual').textContent  = fmtBRL(a.economia_total_anual);
-  document.getElementById('kpi-padroes').textContent = (a.padroes_ruins || []).length + ' identificados';
-  const riscosAlto = (a.riscos || []).filter(r => r.nivel === 'alto').length;
-  const riscosMedio = (a.riscos || []).filter(r => r.nivel === 'medio').length;
-  document.getElementById('kpi-riscos').textContent = `${riscosAlto} alto · ${riscosMedio} médio`;
-  document.getElementById('kpi-section').style.display = 'block';
+  const riscos = a.riscos || [];
+  document.getElementById('kpi-economia-mensal').textContent = brl(a.economia_total_mensal);
+  document.getElementById('kpi-economia-anual').textContent  = brl(a.economia_total_anual);
+  document.getElementById('kpi-padroes').textContent = (a.padroes_ruins || []).length;
+  document.getElementById('kpi-riscos').textContent =
+    `${riscos.filter(r => r.nivel === 'alto').length} alto · ${riscos.filter(r => r.nivel === 'medio').length} médio`;
 
-  // Resumo
   document.getElementById('sa-resumo').textContent = a.resumo || '';
+  document.getElementById('desperdicios-total-badge').textContent = 'Potencial: ' + brl(a.economia_total_mensal) + '/mês';
 
-  // Badge de total de desperdício
-  document.getElementById('desperdicios-total-badge').textContent =
-    'Potencial: ' + fmtBRL(a.economia_total_mensal) + '/mês';
-
-  // Desperdícios
-  const dGrid = document.getElementById('desperdicios-grid');
-  dGrid.innerHTML = '';
-  (a.desperdicios || []).forEach(d => {
-    const card = document.createElement('div');
-    card.style.cssText = 'background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:16px';
-    card.innerHTML = `
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:36px;height:36px;border-radius:9px;background:#fee2e2;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${d.icone}</div>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text)">${d.nome}</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:1px">${d.categoria}</div>
-          </div>
+  document.getElementById('desperdicios-grid').innerHTML = (a.desperdicios || []).map(d => `
+    <div class="result-item tone-danger">
+      <div class="emoji">${esc(d.icone)}</div>
+      <div class="result-body">
+        <div class="row-between" style="align-items:flex-start">
+          <div><div class="result-title">${esc(d.nome)}</div><div class="result-meta">${esc(d.categoria)}</div></div>
+          <div class="result-value"><div class="v">${brl(d.valor_mensal)}</div><div class="l">gasto/mês</div></div>
         </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:11px;color:var(--text-muted)">Gasto atual</div>
-          <div style="font-size:14px;font-weight:700;color:var(--danger)">${fmtBRL(d.valor_mensal)}/mês</div>
+        <p class="result-text">${esc(d.motivo)}</p>
+        <div class="result-foot"><span class="badge tone-success"><i class="fa-solid fa-sack-dollar"></i> Economia de ${brl(d.economia_potencial)}/mês</span></div>
+        <div class="result-action"><i class="fa-solid fa-bolt"></i><span><strong>Ação:</strong> ${esc(d.acao)}</span></div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('padroes-list').innerHTML = (a.padroes_ruins || []).map(p => `
+    <div class="result-item ${PADRAO_TONE[p.tipo] || 'tone-warning'}">
+      <div class="emoji">${esc(p.icone)}</div>
+      <div class="result-body">
+        <div class="result-title">${esc(p.titulo)}</div>
+        <p class="result-text">${esc(p.descricao)}</p>
+        <div class="result-foot">
+          <span class="badge">${brl(p.impacto_mensal)}/mês</span>
+          <span class="badge">${brl(p.impacto_anual)}/ano</span>
         </div>
       </div>
-      <p style="font-size:12px;color:#4b5563;line-height:1.5;margin-bottom:10px">${d.motivo}</p>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid #fecaca">
-        <div style="font-size:12px;color:#15803d;font-weight:600;background:#f0fdf4;padding:4px 10px;border-radius:6px">
-          <i class="fa-solid fa-sack-dollar"></i> Economia: ${fmtBRL(d.economia_potencial)}/mês
+    </div>`).join('');
+
+  document.getElementById('riscos-list').innerHTML = riscos.map(r => {
+    const c = RISCO[r.nivel] || RISCO.medio;
+    return `
+    <div class="result-item ${c.tone}">
+      <div class="emoji">${esc(r.icone)}</div>
+      <div class="result-body">
+        <div class="row" style="flex-wrap:wrap;gap:8px">
+          <span class="badge mono solid">${c.label}</span>
+          <span class="result-title">${esc(r.titulo)}</span>
         </div>
+        <p class="result-text">${esc(r.descricao)}</p>
+        <div class="result-foot"><span class="badge">Em risco: ${brl(r.valor_em_risco)}</span></div>
+        <div class="result-action"><i class="fa-solid fa-lightbulb"></i><span><strong>Solução:</strong> ${esc(r.solucao)}</span></div>
       </div>
-      <div style="margin-top:8px;font-size:12px;color:#1d4ed8;background:#eff6ff;border-radius:6px;padding:6px 10px">
-        <strong>Ação:</strong> ${d.acao}
-      </div>
-    `;
-    dGrid.appendChild(card);
-  });
+    </div>`;
+  }).join('');
 
-  // Padrões ruins
-  const pList = document.getElementById('padroes-list');
-  pList.innerHTML = '';
-  const padraoCores = {
-    gasto_excessivo: { bg: '#fffbeb', border: '#fcd34d', text: '#b45309' },
-    sem_reserva:     { bg: '#fef2f2', border: '#fca5a5', text: '#dc2626' },
-    concentracao:    { bg: '#fff7ed', border: '#fdba74', text: '#c2410c' },
-    impulso:         { bg: '#fdf4ff', border: '#e879f9', text: '#7e22ce' },
-    assinatura_esquecida: { bg: '#fef2f2', border: '#fca5a5', text: '#dc2626' },
-  };
-  (a.padroes_ruins || []).forEach(p => {
-    const c = padraoCores[p.tipo] || padraoCores.gasto_excessivo;
-    const el = document.createElement('div');
-    el.style.cssText = `background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px`;
-    el.innerHTML = `
-      <div style="width:38px;height:38px;border-radius:9px;background:white;border:1px solid ${c.border};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${p.icone}</div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px">
-          <div style="font-size:14px;font-weight:700;color:var(--text)">${p.titulo}</div>
-          <div style="text-align:right;flex-shrink:0">
-            <span style="font-size:12px;color:${c.text};font-weight:700">${fmtBRL(p.impacto_mensal)}/mês</span>
-            <span style="font-size:11px;color:var(--text-muted);margin-left:8px">(${fmtBRL(p.impacto_anual)}/ano)</span>
-          </div>
-        </div>
-        <p style="font-size:13px;color:#374151;line-height:1.5;margin:0">${p.descricao}</p>
-      </div>
-    `;
-    pList.appendChild(el);
-  });
-
-  // Riscos
-  const rList = document.getElementById('riscos-list');
-  rList.innerHTML = '';
-  const riscoCores = {
-    alto:  { bg: '#fef2f2', border: '#fca5a5', badge_bg: '#dc2626', badge_text: 'white', label: 'ALTO' },
-    medio: { bg: '#fffbeb', border: '#fcd34d', badge_bg: '#f59e0b', badge_text: 'white', label: 'MÉDIO' },
-    baixo: { bg: '#f0fdf4', border: '#86efac', badge_bg: '#16a34a', badge_text: 'white', label: 'BAIXO' },
-  };
-  (a.riscos || []).forEach(r => {
-    const c = riscoCores[r.nivel] || riscoCores.medio;
-    const el = document.createElement('div');
-    el.style.cssText = `background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px`;
-    el.innerHTML = `
-      <div style="width:38px;height:38px;border-radius:9px;background:white;border:1px solid ${c.border};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${r.icone}</div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
-          <span style="font-size:11px;font-weight:800;background:${c.badge_bg};color:${c.badge_text};padding:2px 8px;border-radius:4px;letter-spacing:.5px">${c.label}</span>
-          <div style="font-size:14px;font-weight:700;color:var(--text)">${r.titulo}</div>
-          <div style="margin-left:auto;font-size:12px;color:#6b7280;flex-shrink:0">Em risco: <strong>${fmtBRL(r.valor_em_risco)}</strong></div>
-        </div>
-        <p style="font-size:13px;color:#374151;line-height:1.5;margin:0 0 8px">${r.descricao}</p>
-        <div style="font-size:12px;color:#1d4ed8;background:#eff6ff;border-radius:6px;padding:6px 10px">
-          <strong>Solução:</strong> ${r.solucao}
-        </div>
-      </div>
-    `;
-    rList.appendChild(el);
-  });
-
-  // Quick Wins
-  const qList = document.getElementById('quick-wins-list');
-  qList.innerHTML = '';
-  (a.quick_wins || []).forEach((qw, i) => {
-    const el = document.createElement('div');
-    el.style.cssText = 'background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px';
-    el.innerHTML = `
-      <div style="width:28px;height:28px;border-radius:7px;background:var(--success);color:white;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-      <p style="font-size:13px;color:#166534;line-height:1.55;margin:0;font-weight:500">${qw}</p>
-    `;
-    qList.appendChild(el);
-  });
-
-  document.getElementById('sa-results').style.display = 'block';
-
-  // Scroll suave para os resultados
-  document.getElementById('sa-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('quick-wins-list').innerHTML = (a.quick_wins || []).map(q => `<li>${esc(q)}</li>`).join('');
 }
 </script>
 {% endblock %}
