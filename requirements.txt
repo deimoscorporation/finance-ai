@@ -34,7 +34,7 @@ psycopg==3.3.6
 pycparser==3.0
 pydantic==2.12.5
 pydantic_core==2.41.5
-python-dotenv==1.2.2
+python-dotenv==1.2.3
 PyYAML==6.0.3
 regex==2026.3.32
 requests-toolbelt==1.0.0
