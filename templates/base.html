@@ -131,18 +131,6 @@
         </div>
         {% endif %}
 
-        {% if user.is_authenticated and not user.has_openai_key %}
-        {% if page == 'dashboard' or page == 'spending_analysis' or page == 'budget_optimizer' or page == 'investment_assistant' or page == 'whatif_simulator' %}
-        <div class="messages">
-          <div class="msg tone-warning">
-            <i class="fa-solid fa-key"></i>
-            <span>Os recursos de IA precisam da sua chave da OpenAI.
-              <a href="{% url 'profile' %}?tab=openai">Configurar agora →</a></span>
-          </div>
-        </div>
-        {% endif %}
-        {% endif %}
-
         {% block content %}{% endblock %}
 
       </main>

@@ -24,10 +24,17 @@ _INSECURE_KEY = 'django-insecure-change-me'
 SECRET_KEY = os.environ.get('SECRET_KEY', _INSECURE_KEY)
 if not DEBUG and SECRET_KEY == _INSECURE_KEY:
     raise ImproperlyConfigured(
-        'Defina SECRET_KEY no ambiente (ou no .env). Ela também protege as chaves OpenAI salvas no banco.'
+        'Defina SECRET_KEY no ambiente (ou no .env).'
     )
 
 ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost')
+
+# Cadastro público de novos usuários (desligado por padrão)
+ALLOW_REGISTRATION = env_bool('ALLOW_REGISTRATION', False)
+
+# Limites diários de uso da IA por usuário
+AI_DAILY_ANALYSIS_LIMIT = int(os.environ.get('AI_DAILY_ANALYSIS_LIMIT', '3'))
+AI_DAILY_CHAT_LIMIT = int(os.environ.get('AI_DAILY_CHAT_LIMIT', '10'))
 CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS')
 
 INSTALLED_APPS = [

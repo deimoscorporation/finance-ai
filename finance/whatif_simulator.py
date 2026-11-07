@@ -4,9 +4,10 @@ from typing import List
 from dotenv import load_dotenv
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
 from langchain_core.language_models.base import BaseLanguageModel
 from pydantic import BaseModel, Field
+
+from .llm import build_model
 
 
 # ── Pydantic output models ──────────────────────────────────────────────────
@@ -36,16 +37,15 @@ class WhatIfSimulator:
     Segue a mesma arquitetura dos outros agentes do projeto.
     """
 
-    def __init__(self, model: BaseLanguageModel = None, api_key: str = None):
+    def __init__(self, model: BaseLanguageModel = None):
         """
         Inicializa o simulador com o modelo especificado.
-        Se nenhum modelo for passado, usa ChatOpenAI gpt-4o-mini.
+        Se nenhum modelo for passado, usa o Claude configurado em finance.llm.
 
         :param model: Modelo de linguagem compatível com LangChain.
-        :param api_key: Chave da API OpenAI do usuário.
         """
         load_dotenv()
-        self.model = model or ChatOpenAI(model="gpt-4o-mini", temperature=0.7, api_key=api_key)
+        self.model = model or build_model()
         self.parser = JsonOutputParser(pydantic_object=WhatIfResponse)
         self.prompt = self._build_prompt()
         self.chain = self._build_chain()

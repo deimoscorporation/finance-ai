@@ -28,7 +28,7 @@ O que esperar:
 Temos interesse especial em:
 
 - Acesso a dados financeiros de outro usuário (IDOR, falhas de autorização)
-- Exposição ou descriptografia indevida das chaves OpenAI armazenadas
+- Exposição indevida da `ANTHROPIC_API_KEY` do servidor
 - XSS, CSRF, injeção de SQL ou de prompt que leve a vazamento de dados
 - Configurações inseguras na imagem Docker ou nos padrões de produção
 
@@ -36,7 +36,7 @@ Fora de escopo: ataques que exigem acesso físico ao servidor, engenharia social
 
 ## Boas práticas para quem hospeda
 
-- Defina um `SECRET_KEY` forte e exclusivo. Ele criptografa as chaves OpenAI salvas no banco.
+- Defina um `SECRET_KEY` forte e exclusivo e guarde a `ANTHROPIC_API_KEY` fora do repositório.
 - Rode com `DEBUG=False` e HTTPS habilitado.
 - Mantenha as dependências atualizadas (o Dependabot está configurado no repositório).
 - Faça backups do banco, guardando o `SECRET_KEY` correspondente em local seguro.

@@ -33,5 +33,5 @@
   <button type="submit" class="btn btn-primary btn-lg w-full" style="margin-top:8px">Entrar <i class="fa-solid fa-arrow-right"></i></button>
 </form>
 
-<div class="auth-foot">Ainda não tem conta? <a href="{% url 'register' %}" class="link">Criar conta grátis</a></div>
+{% if allow_registration %}<div class="auth-foot">Ainda não tem conta? <a href="{% url 'register' %}" class="link">Criar conta grátis</a></div>{% endif %}
 {% endblock %}

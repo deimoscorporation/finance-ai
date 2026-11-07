@@ -30,4 +30,4 @@ echo "  source .venv/bin/activate"
 echo "  python manage.py createsuperuser   # opcional, para o /admin"
 echo "  python manage.py runserver"
 echo
-echo "Acesse http://127.0.0.1:8000 e cadastre sua chave da OpenAI em Meu perfil."
+echo "Acesse http://127.0.0.1:8000 e defina ANTHROPIC_API_KEY no .env para usar a IA."

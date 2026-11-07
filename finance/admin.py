@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Receita, GastoFixo, GastoVariavel, Reserva, Investimento
+from .models import AIUsage, Receita, GastoFixo, GastoVariavel, Reserva, Investimento
+
+
+@admin.register(AIUsage)
+class AIUsageAdmin(admin.ModelAdmin):
+    list_display = ('user', 'date', 'kind', 'count')
+    list_filter = ('kind', 'date')
+    search_fields = ('user__email',)
+    date_hierarchy = 'date'
 
 
 @admin.register(Receita)

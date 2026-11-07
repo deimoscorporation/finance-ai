@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Obrigado por reportar! Antes de enviar, verifique se já não existe uma issue igual.
-        **Nunca cole sua chave da OpenAI, senhas ou dados financeiros reais aqui.**
+        **Nunca cole sua chave da Anthropic, senhas ou dados financeiros reais aqui.**
   - type: textarea
     id: descricao
     attributes:

@@ -1,0 +1,14 @@
+.gcloudignore
+.git
+.github
+.venv
+venv
+.ruff_cache
+.coverage
+__pycache__/
+*.py[cod]
+.env
+db.sqlite3
+media/
+staticfiles/
+docs/

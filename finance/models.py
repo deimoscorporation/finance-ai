@@ -90,6 +90,31 @@ class Reserva(models.Model):
     def __str__(self):
         return self.nome
 
+
+class AIUsage(models.Model):
+    """Contador diário de uso da IA por usuário e tipo (análises ou chat)."""
+    KIND_ANALYSIS = 'analysis'
+    KIND_CHAT = 'chat'
+    KIND_CHOICES = [
+        (KIND_ANALYSIS, 'Análises de IA'),
+        (KIND_CHAT, 'Mensagens no simulador'),
+    ]
+    user  = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ai_usage')
+    date  = models.DateField(verbose_name='Dia')
+    kind  = models.CharField(max_length=20, choices=KIND_CHOICES, verbose_name='Tipo')
+    count = models.PositiveIntegerField(default=0, verbose_name='Usos')
+
+    class Meta:
+        verbose_name = 'Uso de IA'
+        verbose_name_plural = 'Uso de IA'
+        ordering = ['-date']
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'date', 'kind'], name='unique_ai_usage_per_day'),
+        ]
+
+    def __str__(self):
+        return f'{self.user} · {self.date} · {self.get_kind_display()}: {self.count}'
+
     @property
     def progresso(self):
         if self.meta and self.meta > 0:

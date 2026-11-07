@@ -7,7 +7,7 @@ updates:
     open-pull-requests-limit: 5
     groups:
       langchain:
-        patterns: ["langchain*", "langgraph*", "langsmith", "openai"]
+        patterns: ["langchain*", "langgraph*", "langsmith", "anthropic"]
       django:
         patterns: ["django*", "whitenoise", "gunicorn", "dj-database-url"]
 

@@ -17,7 +17,7 @@ RUN pip install -r requirements.txt
 FROM python:3.11-slim
 
 LABEL org.opencontainers.image.title="FinancePro" \
-      org.opencontainers.image.description="Finanças pessoais com assistentes de IA (Django + LangChain + OpenAI)" \
+      org.opencontainers.image.description="Finanças pessoais com assistentes de IA (Django + LangChain + Claude)" \
       org.opencontainers.image.vendor="Deimos Corp" \
       org.opencontainers.image.licenses="MIT"
 

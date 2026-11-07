@@ -9,20 +9,44 @@ from .forms import ReceitaForm, GastoFixoForm, GastoVariavelForm, ReservaForm, I
 import json
 import logging
 
-from openai import AuthenticationError
+import anthropic
+
+from . import quota
+from .llm import LLMRefusal
+from .models import AIUsage
 
 logger = logging.getLogger(__name__)
 
 
-MISSING_KEY_MSG = 'Configure sua chave da OpenAI em Meu Perfil → Chave OpenAI para usar os recursos de IA.'
-INVALID_KEY_MSG = 'Sua chave da OpenAI foi recusada. Verifique-a em Meu Perfil → Chave OpenAI.'
+AI_UNAVAILABLE_MSG = 'O serviço de IA está indisponível no momento. Tente novamente mais tarde.'
+AI_BUSY_MSG = 'Muitas solicitações à IA agora. Aguarde alguns segundos e tente novamente.'
+AI_REFUSAL_MSG = 'A IA não pôde responder a esta solicitação. Reformule e tente novamente.'
 
 
-def _require_openai_key(user):
-    key = user.openai_api_key
-    if not key:
-        raise ValueError(MISSING_KEY_MSG)
-    return key
+def _ai_error_response(exc, label, user):
+    """Converte erros da IA em respostas JSON amigáveis."""
+    if isinstance(exc, ValueError):
+        return JsonResponse({'success': False, 'error': str(exc)}, status=400)
+    if isinstance(exc, LLMRefusal):
+        return JsonResponse({'success': False, 'error': AI_REFUSAL_MSG}, status=400)
+    if isinstance(exc, anthropic.RateLimitError):
+        return JsonResponse({'success': False, 'error': AI_BUSY_MSG}, status=429)
+    logger.exception('%s error for user %s', label, user.pk)
+    return JsonResponse({'success': False, 'error': AI_UNAVAILABLE_MSG}, status=503)
+
+
+def _run_ai(request, kind, label, key, fn):
+    """Aplica o limite diário, chama a IA e devolve a cota se a chamada falhar."""
+    try:
+        reservation = quota.reserve(request.user, kind)
+    except quota.QuotaExceeded as e:
+        return JsonResponse({'success': False, 'error': str(e), 'limit_reached': True}, status=429)
+    try:
+        payload = fn()
+    except Exception as e:
+        quota.release(reservation)
+        return _ai_error_response(e, label, request.user)
+    return JsonResponse({'success': True, key: payload, 'remaining': reservation.remaining})
 
 
 def _totals(user):
@@ -95,20 +119,9 @@ def ai_coach(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'method not allowed'}, status=405)
 
-    try:
-        from .ai_coach import FinancialCoach
-        analysis = FinancialCoach(api_key=_require_openai_key(request.user)).analyse(request.user)
-        return JsonResponse({'success': True, 'analysis': analysis})
-    except ValueError as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except AuthenticationError:
-        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
-    except Exception:
-        logger.exception("AI Coach error for user %s", request.user.pk)
-        return JsonResponse(
-            {'success': False, 'error': 'Erro ao processar análise. Verifique sua API key e tente novamente.'},
-            status=500,
-        )
+    from .ai_coach import FinancialCoach
+    return _run_ai(request, AIUsage.KIND_ANALYSIS, 'AI Coach', 'analysis',
+                   lambda: FinancialCoach().analyse(request.user))
 
 
 @login_required
@@ -121,20 +134,9 @@ def investment_assistant_run(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'method not allowed'}, status=405)
 
-    try:
-        from .investment_assistant import InvestmentAssistant
-        analysis = InvestmentAssistant(api_key=_require_openai_key(request.user)).analyse(request.user)
-        return JsonResponse({'success': True, 'analysis': analysis})
-    except ValueError as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except AuthenticationError:
-        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
-    except Exception:
-        logger.exception("Investment assistant error for user %s", request.user.pk)
-        return JsonResponse(
-            {'success': False, 'error': 'Erro ao processar análise. Verifique sua API key e tente novamente.'},
-            status=500,
-        )
+    from .investment_assistant import InvestmentAssistant
+    return _run_ai(request, AIUsage.KIND_ANALYSIS, 'Investment assistant', 'analysis',
+                   lambda: InvestmentAssistant().analyse(request.user))
 
 
 @login_required
@@ -147,20 +149,9 @@ def budget_optimizer_run(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'method not allowed'}, status=405)
 
-    try:
-        from .budget_optimizer import BudgetOptimizer
-        analysis = BudgetOptimizer(api_key=_require_openai_key(request.user)).analyse(request.user)
-        return JsonResponse({'success': True, 'analysis': analysis})
-    except ValueError as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except AuthenticationError:
-        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
-    except Exception:
-        logger.exception("Budget optimizer error for user %s", request.user.pk)
-        return JsonResponse(
-            {'success': False, 'error': 'Erro ao gerar orçamento. Verifique sua API key e tente novamente.'},
-            status=500,
-        )
+    from .budget_optimizer import BudgetOptimizer
+    return _run_ai(request, AIUsage.KIND_ANALYSIS, 'Budget optimizer', 'analysis',
+                   lambda: BudgetOptimizer().analyse(request.user))
 
 
 @login_required
@@ -173,20 +164,9 @@ def spending_analysis_run(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'method not allowed'}, status=405)
 
-    try:
-        from .spending_analyzer import SpendingAnalyzer
-        analysis = SpendingAnalyzer(api_key=_require_openai_key(request.user)).analyse(request.user)
-        return JsonResponse({'success': True, 'analysis': analysis})
-    except ValueError as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except AuthenticationError:
-        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
-    except Exception:
-        logger.exception("Spending analysis error for user %s", request.user.pk)
-        return JsonResponse(
-            {'success': False, 'error': 'Erro ao processar análise. Verifique sua API key e tente novamente.'},
-            status=500,
-        )
+    from .spending_analyzer import SpendingAnalyzer
+    return _run_ai(request, AIUsage.KIND_ANALYSIS, 'Spending analysis', 'analysis',
+                   lambda: SpendingAnalyzer().analyse(request.user))
 
 
 @login_required
@@ -201,24 +181,16 @@ def whatif_chat(request):
 
     try:
         body = json.loads(request.body)
-        pergunta = body.get('pergunta', '').strip()
+        pergunta = str(body.get('pergunta', '')).strip()
         historico = body.get('historico', [])
-        if not pergunta:
-            return JsonResponse({'success': False, 'error': 'Pergunta não pode ser vazia.'}, status=400)
+    except (ValueError, AttributeError):
+        return JsonResponse({'success': False, 'error': 'Requisição inválida.'}, status=400)
+    if not pergunta:
+        return JsonResponse({'success': False, 'error': 'Pergunta não pode ser vazia.'}, status=400)
 
-        from .whatif_simulator import WhatIfSimulator
-        result = WhatIfSimulator(api_key=_require_openai_key(request.user)).chat(request.user, pergunta, historico)
-        return JsonResponse({'success': True, 'result': result})
-    except ValueError as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    except AuthenticationError:
-        return JsonResponse({'success': False, 'error': INVALID_KEY_MSG}, status=400)
-    except Exception:
-        logger.exception("What-if simulator error for user %s", request.user.pk)
-        return JsonResponse(
-            {'success': False, 'error': 'Erro ao processar simulação. Verifique sua API key e tente novamente.'},
-            status=500,
-        )
+    from .whatif_simulator import WhatIfSimulator
+    return _run_ai(request, AIUsage.KIND_CHAT, 'What-if simulator', 'result',
+                   lambda: WhatIfSimulator().chat(request.user, pergunta, historico))
 
 
 @login_required

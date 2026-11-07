@@ -11,11 +11,11 @@ Controle receitas, gastos, reservas e investimentos e deixe cinco assistentes de
 [![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-8FA0FF.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.11%2B-3776AB.svg?logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/django-4.2-0C4B33.svg?logo=django&logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-OpenAI-1C3C3C.svg)
+![LangChain](https://img.shields.io/badge/LangChain-Claude-1C3C3C.svg)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)
 [![PRs bem-vindos](https://img.shields.io/badge/PRs-bem--vindos-4ADE80.svg)](CONTRIBUTING.md)
 
-[Funcionalidades](#-funcionalidades) · [Início rápido](#-início-rápido) · [Chave da OpenAI](#-sua-chave-da-openai) · [Configuração](#%EF%B8%8F-configuração) · [Contribuir](#-contribuindo)
+[Funcionalidades](#-funcionalidades) · [Início rápido](#-início-rápido) · [IA com Claude](#-ia-com-claude) · [Configuração](#%EF%B8%8F-configuração) · [Contribuir](#-contribuindo)
 
 <img src="docs/screenshots/dashboard.png" alt="Dashboard do FinancePro" width="100%">
 
@@ -50,7 +50,7 @@ Controle receitas, gastos, reservas e investimentos e deixe cinco assistentes de
 
 ### Destaques
 
-- 🔑 **Traga sua própria chave (BYOK):** cada usuário usa a própria chave da OpenAI, guardada criptografada.
+- 🤖 **IA pronta para usar:** assistentes movidos pelo Claude Haiku 5.5, sem configuração por usuário.
 - 🌑 **Interface moderna em tema escuro**, responsiva e com a identidade visual da Deimos Corp.
 - 🐳 **Pronto para produção:** Docker, PostgreSQL, Gunicorn, WhiteNoise e configuração via variáveis de ambiente.
 - 🔒 **Isolamento por usuário:** cada conta só enxerga os próprios dados.
@@ -76,7 +76,7 @@ Controle receitas, gastos, reservas e investimentos e deixe cinco assistentes de
   </tr>
   <tr>
     <td><img src="docs/screenshots/gastos-fixos.png" alt="Gastos fixos"><p align="center"><sub>Gastos fixos</sub></p></td>
-    <td><img src="docs/screenshots/perfil.png" alt="Perfil e chave OpenAI"><p align="center"><sub>Perfil e chave da OpenAI</sub></p></td>
+    <td><img src="docs/screenshots/perfil.png" alt="Perfil"><p align="center"><sub>Perfil</sub></p></td>
   </tr>
 </table>
 
@@ -101,11 +101,11 @@ Requer [Docker](https://docs.docker.com/get-docker/) com Compose.
 git clone https://github.com/<seu-usuario>/finance-ai.git
 cd finance-ai
 cp .env.example .env
-# edite o .env e defina um SECRET_KEY forte (veja abaixo como gerar)
+# edite o .env: defina um SECRET_KEY forte e a ANTHROPIC_API_KEY
 docker compose up -d --build
 ```
 
-Acesse **http://localhost:8000**, crie sua conta e cadastre sua chave da OpenAI em **Meu perfil → Chave OpenAI**.
+Acesse **http://localhost:8000**, e crie sua conta.
 
 O Compose sobe a aplicação e um PostgreSQL com volumes persistentes. As migrações rodam automaticamente. Para criar um admin na primeira execução, defina `DJANGO_SUPERUSER_EMAIL` e `DJANGO_SUPERUSER_PASSWORD` no `.env`.
 
@@ -144,31 +144,20 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 
 ---
 
-## 🔑 Sua chave da OpenAI
+## 🤖 IA com Claude
 
-Os assistentes de IA usam a **chave pessoal de cada usuário**, cadastrada pela interface. O servidor não precisa de nenhuma chave, e o custo é cobrado na conta OpenAI de cada usuário.
+Os assistentes usam o **Claude Haiku 5.5** (`claude-haiku-5-5`), o modelo mais barato da Anthropic, com a chave do servidor definida em `ANTHROPIC_API_KEY`. Os usuários não precisam configurar nada.
 
-1. Gere uma chave em [platform.openai.com/api-keys](https://platform.openai.com/api-keys) (**Create new secret key**) e confira se há créditos em *Billing*.
-2. No FinancePro, abra **Meu perfil → Chave OpenAI**, cole a chave e clique em **Salvar chave**.
+1. Gere uma chave em [platform.claude.com](https://platform.claude.com) e defina `ANTHROPIC_API_KEY` no `.env` (ou no gerenciador de segredos em produção).
+2. Opcional: troque o modelo com `ANTHROPIC_MODEL` e o esforço de raciocínio com `ANTHROPIC_EFFORT` (`low`, `medium`, `high`).
 
-Enquanto não houver chave cadastrada, as páginas de IA mostram um aviso com link direto para essa tela.
-
-**Como a chave é tratada**
-
-- Criptografada (Fernet/AES) antes de ir para o banco, com uma chave derivada do `SECRET_KEY`.
-- Nunca exibida por inteiro, apenas mascarada (`sk-proj…a1B2`).
-- Usada somente nas requisições feitas a partir da conta do próprio usuário.
-- Pode ser substituída ou removida a qualquer momento.
-
-> ⚠️ Se o `SECRET_KEY` for alterado, as chaves salvas deixam de ser legíveis e cada usuário precisará cadastrar a sua novamente.
-
-**Custos:** todas as análises usam o `gpt-4o-mini`, e cada uma custa em geral uma fração de centavo de dólar. Recomendamos definir um limite de gastos no painel da OpenAI.
+**Custos:** o Haiku 5.5 custa US$ 0,10 por milhão de tokens de entrada e US$ 0,50 por milhão de saída, então cada análise sai por uma fração de centavo. Como o custo é do servidor, defina um limite de gastos no console da Anthropic.
 
 | Mensagem | Causa provável | Solução |
 |---|---|---|
-| *Configure sua chave da OpenAI…* | Nenhuma chave cadastrada | Cadastre em **Meu perfil → Chave OpenAI** |
-| *Sua chave da OpenAI foi recusada…* | Chave revogada ou incorreta | Gere uma nova chave e substitua |
-| *Erro ao processar análise…* | Sem créditos, limite atingido ou rede | Verifique *Billing* e limites da conta OpenAI |
+| *Os recursos de IA não estão configurados…* | `ANTHROPIC_API_KEY` ausente | Defina a variável no ambiente |
+| *Muitas solicitações à IA agora…* | Limite de taxa da API atingido | Aguarde e tente de novo |
+| *O serviço de IA está indisponível…* | Chave inválida, sem créditos ou rede | Veja os logs do servidor |
 
 ---
 
@@ -178,9 +167,10 @@ Toda a configuração é feita por variáveis de ambiente (ou pelo `.env`; veja 
 
 | Variável | Padrão | Descrição |
 |---|---|---|
-| `SECRET_KEY` | — | **Obrigatória** quando `DEBUG=False`. Também criptografa as chaves OpenAI |
+| `SECRET_KEY` | — | **Obrigatória** quando `DEBUG=False` |
 | `DEBUG` | `False` | Use `True` apenas em desenvolvimento |
 | `ALLOWED_HOSTS` | `127.0.0.1,localhost` | Hosts aceitos, separados por vírgula |
+| `ALLOW_REGISTRATION` | `False` | Libera o cadastro público de novos usuários |
 | `CSRF_TRUSTED_ORIGINS` | — | Origens confiáveis, ex.: `https://financas.seudominio.com` |
 | `DATABASE_URL` | SQLite local | Ex.: `postgres://user:senha@host:5432/financepro` |
 | `SECURE_COOKIES` | `True`* | Cookies apenas via HTTPS (*quando `DEBUG=False`) |
@@ -189,6 +179,11 @@ Toda a configuração é feita por variáveis de ambiente (ou pelo `.env`; veja 
 | `SERVE_MEDIA` | `True` | Django serve as fotos de perfil. Desative se o proxy servir `/media` |
 | `LOG_LEVEL` | `INFO` | Nível de log |
 | `GUNICORN_WORKERS` | `3` | Workers do Gunicorn no container |
+| `ANTHROPIC_API_KEY` | — | Chave da API da Anthropic usada pelos assistentes de IA |
+| `ANTHROPIC_MODEL` | `claude-haiku-5-5` | Modelo Claude usado pelos assistentes |
+| `ANTHROPIC_EFFORT` | `low` | Esforço de raciocínio do modelo (`low`, `medium`, `high`) |
+| `AI_DAILY_ANALYSIS_LIMIT` | `3` | Análises de IA por usuário por dia (Coach, Gastos, Orçamento e Investimentos somados) |
+| `AI_DAILY_CHAT_LIMIT` | `10` | Mensagens por usuário por dia no simulador "E se?" |
 
 ---
 
@@ -196,8 +191,9 @@ Toda a configuração é feita por variáveis de ambiente (ou pelo `.env`; veja 
 
 ```
 finance-ai/
-├── accounts/            # Usuário (login por e-mail), perfil e chave OpenAI criptografada
+├── accounts/            # Usuário (login por e-mail) e perfil
 ├── finance/             # Modelos financeiros, views e os 5 agentes de IA
+│   ├── llm.py           # Cliente do Claude (SDK oficial da Anthropic)
 │   ├── ai_coach.py · spending_analyzer.py · budget_optimizer.py
 │   └── investment_assistant.py · whatif_simulator.py
 ├── finance_project/     # Settings, URLs e WSGI
@@ -211,28 +207,28 @@ finance-ai/
 └── .github/             # CI, templates de issue/PR e Dependabot
 ```
 
-**Stack:** Python 3.11+, Django 4.2, LangChain + OpenAI `gpt-4o-mini`, Pydantic v2, Chart.js, SQLite/PostgreSQL, Gunicorn e WhiteNoise.
+**Stack:** Python 3.11+, Django 4.2, LangChain + Claude Haiku 5.5 (SDK `anthropic`), Pydantic v2, Chart.js, SQLite/PostgreSQL, Gunicorn e WhiteNoise.
 
 ### Agentes de IA
 
 Todos os agentes seguem o mesmo pipeline, o que facilita criar novos:
 
 ```
-dados do usuário (ORM) → contexto em texto → PromptTemplate → ChatOpenAI → JsonOutputParser (Pydantic) → JSON → UI
+dados do usuário (ORM) → contexto em texto → PromptTemplate → Claude (finance/llm.py) → JsonOutputParser (Pydantic) → JSON → UI
 ```
 
 ```python
 from finance.ai_coach import FinancialCoach
 
-analysis = FinancialCoach(api_key=user.openai_api_key).analyse(user)
+analysis = FinancialCoach().analyse(user)
 ```
 
-Cada agente aceita qualquer modelo compatível com LangChain pelo parâmetro `model`, o que permite trocar de modelo ou de provedor:
+Cada agente aceita qualquer Runnable LangChain pelo parâmetro `model`, o que permite trocar de modelo:
 
 ```python
-from langchain_openai import ChatOpenAI
+from finance.llm import build_model
 
-coach = FinancialCoach(model=ChatOpenAI(model="gpt-4o", temperature=0.4, api_key="sk-..."))
+coach = FinancialCoach(model=build_model(max_tokens=4000))
 ```
 
 Detalhes adicionais em [`docs/documentacao.pdf`](docs/documentacao.pdf).
@@ -247,7 +243,7 @@ make test      # checks do Django, migrações pendentes e testes com cobertura
 make lint      # ruff
 ```
 
-Os testes não chamam a API da OpenAI (usam mocks) e rodam sem chave. O CI no GitHub Actions executa lint, testes em Python 3.11 e 3.12 e o build da imagem Docker a cada push e PR.
+Os testes não chamam a API da Anthropic (usam mocks) e rodam sem chave. O CI no GitHub Actions executa lint, testes em Python 3.11 e 3.12 e o build da imagem Docker a cada push e PR.
 
 ---
 
@@ -259,7 +255,8 @@ Checklist:
 - [ ] `ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS` com seu domínio
 - [ ] HTTPS no proxy reverso (Nginx, Caddy, Traefik) e `SECURE_COOKIES=True`
 - [ ] PostgreSQL via `DATABASE_URL`
-- [ ] Backups do banco **e** do `SECRET_KEY` (sem ele, as chaves OpenAI do backup não podem ser lidas)
+- [ ] `ANTHROPIC_API_KEY` em um gerenciador de segredos
+- [ ] Backups do banco
 
 A imagem Docker já roda como usuário sem privilégios, aplica as migrações ao iniciar, serve os arquivos estáticos com WhiteNoise e expõe o healthcheck em `/healthz/`.
 
@@ -273,7 +270,7 @@ Contribuições são muito bem-vindas: código, documentação, traduções, ide
 - Siga o [Código de Conduta](CODE_OF_CONDUCT.md)
 - Veja o que mudou no [CHANGELOG](CHANGELOG.md)
 
-Ideias para começar: suporte a outros provedores de LLM (Anthropic, Gemini, Ollama), histórico mensal e comparação entre meses, importação de extratos (OFX/CSV) e internacionalização.
+Ideias para começar: suporte a outros provedores de LLM (Gemini, Ollama), histórico mensal e comparação entre meses, importação de extratos (OFX/CSV) e internacionalização.
 
 ## 🔒 Segurança
 

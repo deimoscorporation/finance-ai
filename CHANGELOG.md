@@ -6,6 +6,16 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e 
 
 ## Não lançado
 
+### Adicionado
+- Limite diário de uso da IA por usuário: 3 análises (`AI_DAILY_ANALYSIS_LIMIT`) e 10 mensagens no simulador (`AI_DAILY_CHAT_LIMIT`). Chamadas que falham não consomem a cota, e o uso aparece no admin em **Uso de IA**.
+- Cadastro público controlado por `ALLOW_REGISTRATION` (desligado por padrão).
+
+### Alterado
+- Os assistentes de IA passam a usar o Claude Haiku 5.5 (`claude-haiku-5-5`) pelo SDK oficial da Anthropic, com a chave do servidor em `ANTHROPIC_API_KEY`. Modelo e esforço configuráveis por `ANTHROPIC_MODEL` e `ANTHROPIC_EFFORT`.
+
+### Removido
+- Integração com a OpenAI e a chave por usuário (BYOK): campo `openai_api_key_encrypted`, aba **Chave OpenAI** do perfil e as dependências `openai`, `langchain-openai` e `tiktoken`.
+
 ## 1.0.0 - 2026-09-30
 
 Primeira versão open source.

@@ -30,7 +30,7 @@ python manage.py runserver
 
 Atalhos equivalentes estão no [`Makefile`](Makefile): `make install`, `make run`, `make test`, `make lint`.
 
-Para testar os recursos de IA você precisa de uma chave própria da OpenAI, cadastrada em **Meu perfil → Chave OpenAI**. Os testes automatizados **não** chamam a API (usam mocks), então não é preciso chave para rodá-los.
+Para testar os recursos de IA você precisa de uma chave da Anthropic em `ANTHROPIC_API_KEY` no `.env`. Os testes automatizados **não** chamam a API (usam mocks), então não é preciso chave para rodá-los.
 
 ## Padrões do projeto
 
