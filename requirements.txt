@@ -1,5 +1,5 @@
 annotated-types==0.7.0
-anthropic==2.6.0
+anthropic==2.8.0
 anyio==4.13.0
 asgiref==3.11.1
 certifi==2026.2.25
@@ -20,13 +20,13 @@ idna==3.11
 jiter==0.13.0
 jsonpatch==1.33
 jsonpointer==3.1.1
-langchain-core==1.2.23
-langchain==1.2.14
-langgraph-checkpoint==4.0.1
-langgraph-prebuilt==1.0.8
-langgraph-sdk==0.3.12
-langgraph==1.1.4
-langsmith==0.7.23
+langchain-core==1.8.1
+langchain==1.5.0
+langgraph-checkpoint==4.3.2
+langgraph-prebuilt==1.1.2
+langgraph-sdk==0.4.14
+langgraph==1.2.22
+langsmith==0.14.17
 opentelemetry-api==1.45.2
 orjson==3.11.8
 ormsgpack==1.12.2
